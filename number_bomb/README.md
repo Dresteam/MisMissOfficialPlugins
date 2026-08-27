@@ -1,6 +1,6 @@
 # 数字炸弹插件（number_bomb）
 
-仿照 MIST 标准 Java 插件 `Digital.java` 实现的数字炸弹小游戏。
+数字炸弹小游戏
 
 ## 玩法
 
