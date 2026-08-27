@@ -1,0 +1,46 @@
+{
+    "cmd_add":        {"type": "string", "default": "点播", "description": "添加点播的指令名"},
+    "cmd_add_aliases":{"type": "array",  "default": ["点歌"], "description": "添加点播指令的别名"},
+    "cmd_list":       {"type": "string", "default": "点播单", "description": "查看点播单的指令名"},
+    "cmd_list_aliases":{"type": "array","default": ["点歌单"], "description": "查看点播单指令的别名"},
+    "cmd_complete":   {"type": "string", "default": "完成", "description": "标记完成的指令名（管理员）"},
+    "cmd_delete":     {"type": "string", "default": "删除", "description": "删除点播的指令名（管理员）"},
+    "cmd_playing":    {"type": "string", "default": "播放", "description": "标记播放中的指令名（管理员）"},
+    "cmd_working":    {"type": "string", "default": "操作", "description": "标记操作中的指令名（管理员）"},
+    "page_size":      {"type": "int",    "default": 8, "description": "点播单每页显示条目数"},
+    "timer_enabled":  {"type": "boolean","default": false, "description": "是否启用定时宣传消息"},
+    "timer_message":  {"type": "string", "default": "本直播间已开启点播，发送「点播 歌名」来点歌吧～ 🎵", "description": "定时宣传消息文案（{cmd_add} 会被替换为实际指令名；发送间隔由服务器 config.yml → bot.timer_interval 统一控制）"},
+    "enabled_rooms":  {"type": "array",  "default": [], "description": "启用本插件的直播间 ID 列表（空=全部）"},
+
+    "standalone_enabled": {"type": "boolean", "default": false, "description": "是否启用独立前端（每个直播间独立面板，无需登录主面板）"},
+    "standalone_port":    {"type": "int",     "default": 18888, "description": "独立前端监听端口"},
+    "standalone_host":    {"type": "string",  "default": "0.0.0.0", "description": "独立前端监听地址"},
+
+    "playlist_header": {"type": "string", "default": "★--☁✨☁ 本场点播单☁✨☁--★", "description": "点播单头部装饰"},
+    "playlist_footer": {"type": "string", "default": "══════ ᶫᵒᵛᵉᵧₒᵤ ══════", "description": "点播单底部装饰"},
+    "playlist_item_prefix": {"type": "string", "default": "❥•", "description": "点播单每行前缀"},
+    "playlist_page_format": {"type": "string", "default": "❀ ✣({page}/{total}页)", "description": "页码行格式"},
+    "playlist_item_format": {"type": "string", "default": "{prefix}{idx} 『{song}』 @{user}{icon}", "description": "点播单条目格式"},
+    "playlist_empty_slot":  {"type": "string", "default": "{prefix}{idx}", "description": "点播单空槽格式"},
+
+    "status_icons": {
+        "type": "object",
+        "default": {"pending":" ⏳","playing":" 🎵","working":" 🔧","done":" ✅"},
+        "description": "各状态对应的图标"
+    },
+
+    "msg_add_success":    {"type": "string", "default": "✅ 已收录点播：『{song}』  @{user}", "description": "点播成功消息（{song}/{user} 会替换）"},
+    "msg_delete_success": {"type": "string", "default": "🗑️ #{n}『{song}』已删除", "description": "删除成功消息"},
+    "msg_invalid_index":  {"type": "string", "default": "❌ 无效序号（共 {count} 项）", "description": "无效序号提示"},
+
+    "msg_player_border":    {"type": "string", "default": "•────⋆⁺₊⋆☾⋆⁺₊⋆────•", "description": "播放器状态消息边框"},
+    "msg_player_progress":  {"type": "string", "default": " ●━━━━━────── 5:20", "description": "播放器进度条"},
+    "msg_player_controls":  {"type": "string", "default": "⇆        ᐊ    ■    ᐅ        ♥︎", "description": "播放器控制按钮"},
+
+    "msg_playing_emoji":     {"type": "string", "default": "·  .⋆ 🎵✨ 正在播放 ✨🎵·  .⋆", "description": "播放中 emoji 行"},
+    "msg_working_emoji":     {"type": "string", "default": "·  .⋆ 🪐✨ 正在操作 ✨🪐·  .⋆", "description": "操作中 emoji 行"},
+    "msg_done_text":          {"type": "string", "default": "💗主播大大已经完成🎤『{song}』了喔", "description": "已完成消息"},
+
+    "msg_web_add_success":    {"type": "string", "default": "✅ [Web] 已收录点播：『{song}』", "description": "Web端点播成功消息"},
+    "msg_web_delete_success": {"type": "string", "default": "🗑️ [Web] 点播 #{n}『{song}』已删除", "description": "Web端删除成功消息"}
+}

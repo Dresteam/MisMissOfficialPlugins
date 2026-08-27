@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="light">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>点播单 · MisMiss</title>
+<style>
+:root{
+--surface-950:#020617; --surface-900:#0f172a; --surface-850:#172033; --surface-800:#1e293b; --surface-700:#334155;
+--surface-200:#e2e8f0; --surface-100:#f1f5f9; --surface-50:#f8fafc;
+--primary-500:#3b82f6; --primary-600:#2563eb; --primary-400:#60a5fa;
+--danger:#ef4444; --success:#22c55e; --warning:#eab308; --info:#3b82f6;
+--bg:#020617; --bg-card:#0f172a; --bg-input:#1e293b; --border:#334155;
+--text:#e2e8f0; --text-muted:#94a3b8;
+}
+.light{--bg:#f8fafc;--bg-card:#ffffff;--bg-input:#f1f5f9;--border:#e2e8f0;--text:#0f172a;--text-muted:#64748b}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .3s,color .3s}
+.container{max-width:800px;margin:0 auto;padding:16px}
+header{display:flex;align-items:center;justify-content:space-between;padding:20px 0;border-bottom:1px solid var(--border);margin-bottom:16px;flex-wrap:wrap;gap:8px}
+h1{font-size:1.3em;font-weight:700}
+h1 .accent{color:var(--primary-500)}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+select,input[type=text]{padding:7px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg-input);color:var(--text);font-size:.88em;outline:none}
+select:focus,input:focus{border-color:var(--primary-500);box-shadow:0 0 0 2px rgba(59,130,246,.2)}
+.btn{padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);color:var(--text);cursor:pointer;font-size:.85em;font-weight:500;transition:all .15s}
+.btn:hover{opacity:.85}
+.btn.primary{background:var(--primary-500);border-color:var(--primary-500);color:#fff}
+.btn.danger{background:var(--danger);border-color:var(--danger);color:#fff}
+.btn.ghost{background:transparent}
+.stats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.stat{padding:4px 12px;border-radius:999px;font-size:.75em;font-weight:600;background:var(--bg-card);border:1px solid var(--border)}
+.stat.pending{color:var(--warning)}.stat.playing{color:var(--success)}.stat.working{color:var(--info)}.stat.done{color:var(--text-muted)}
+.list .item{display:flex;align-items:center;gap:10px;padding:10px 14px;margin:4px 0;border-radius:10px;background:var(--bg-card);border:1px solid var(--border);transition:all .2s}
+.item.playing{border-color:rgba(34,197,94,.5)}.item.working{border-color:rgba(59,130,246,.5)}.item.done{opacity:.5}
+.cb{width:16px;height:16px;accent-color:var(--primary-500);cursor:pointer}
+.idx{min-width:26px;text-align:center;font-weight:700;color:var(--text-muted);font-size:.82em}
+.name{flex:1;font-weight:500;font-size:.92em}
+.user{color:var(--primary-400);font-size:.82em}
+.badge{font-size:.68em;font-weight:600;padding:2px 8px;border-radius:999px}
+.badge.pending{background:rgba(234,179,8,.15);color:var(--warning)}
+.badge.playing{background:rgba(34,197,94,.15);color:var(--success)}
+.badge.working{background:rgba(59,130,246,.15);color:var(--info)}
+.badge.done{background:rgba(100,116,139,.15);color:var(--text-muted)}
+.actions{display:flex;gap:3px}
+.actions .btn{padding:4px 8px;font-size:.75em;border-radius:6px}
+.empty{text-align:center;padding:60px 20px;color:var(--text-muted)}
+footer{text-align:center;padding:20px;color:var(--text-muted);font-size:.72em;border-top:1px solid var(--border);margin-top:24px}
+.toast{position:fixed;top:16px;right:16px;z-index:99;padding:10px 18px;border-radius:8px;color:#fff;font-size:.85em;font-weight:600;animation:slideIn .3s ease}
+.toast.ok{background:var(--success)}.toast.err{background:var(--danger)}
+@keyframes slideIn{from{transform:translateX(100px);opacity:0}to{transform:translateX(0);opacity:1}}
+@media(max-width:600px){.item{flex-wrap:wrap}.actions{width:100%;justify-content:flex-end}}
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+  <h1>🎵 <span class="accent">MisMiss</span> 点播单 <span id="roomTitle" style="font-size:.7em;color:var(--text-muted)"></span></h1>
+  <div class="toolbar">
+    <select id="roomSel" onchange="switchRoom()"></select>
+    <button class="btn ghost" onclick="toggleTheme()" id="themeBtn">🌙</button>
+    <button class="btn ghost" onclick="loadData()">🔄 刷新</button>
+  </div>
+</header>
+<div class="toolbar" id="addRow" style="margin-bottom:12px">
+  <input type="text" id="addInput" placeholder="输入歌名，回车添加..." style="flex:1"
+    onkeydown="if(event.key==='Enter')addSong()">
+  <button class="btn primary" onclick="addSong()">+ 添加</button>
+</div>
+<div class="stats" id="stats"></div>
+<div class="list" id="list"></div>
+<div class="toolbar" id="batchBar" style="display:none;margin:12px 0">
+  <span style="font-size:.8em" id="selCount"></span>
+  <button class="btn" onclick="batchStatus('playing')">🎵 播放中</button>
+  <button class="btn" onclick="batchStatus('working')">🔧 操作中</button>
+  <button class="btn" onclick="batchStatus('done')">✅ 完成</button>
+  <button class="btn" onclick="batchStatus('pending')">🔄 重置</button>
+  <button class="btn danger" onclick="batchDelete()">🗑️ 删除</button>
+  <button class="btn ghost" onclick="clearSel()">取消</button>
+</div>
+<footer>MisMiss SongRequest · 独立面板</footer>
+</div>
+<div id="toast"></div>
+<script>
+const ICONS={pending:'⏳',playing:'🎵',working:'🔧',done:'✅'};
+const LABELS={pending:'待播',playing:'播放中',working:'操作中',done:'已完成'};
+let roomId=0, items=[], selected=new Set();
+
+function toggleTheme(){
+  const h=document.documentElement;
+  h.classList.toggle('light');h.classList.toggle('dark');
+  document.getElementById('themeBtn').textContent=h.classList.contains('light')?'🌙':'☀️';
+  localStorage.setItem('sq_theme',h.classList.contains('light')?'light':'dark');
+}
+(function(){
+  // 默认浅色；仅当用户明确选择深色时才切换
+  const saved=localStorage.getItem('sq_theme');
+  if(saved==='dark'){
+    document.documentElement.classList.remove('light');
+    document.documentElement.classList.add('dark');
+    document.getElementById('themeBtn').textContent='☀️';
+  }else{
+    document.getElementById('themeBtn').textContent='🌙';
+  }
+})();
+
+async function loadRooms(){
+  try{
+    // 从 URL 路径解析房间 ID：/140216322 → 直接绑定该直播间（隐藏选择器）
+    const m=location.pathname.match(/^\/(\d+)\/?$/);
+    const boundRoom=m?parseInt(m[1]):0;
+    const sel=document.getElementById('roomSel');
+
+    const r=await fetch('/api/rooms');
+    const data=await r.json();
+
+    if(boundRoom){
+      sel.style.display='none';
+      const name=data.find(x=>x.room_id===boundRoom);
+      if(!name){
+        // 直播间不存在
+        document.getElementById('roomTitle').textContent='';
+        document.getElementById('addRow').style.display='none';
+        document.getElementById('list').innerHTML='<div class="empty">❌ 该直播间不存在<br><small>请检查直播间 ID 是否正确，或等待主播在直播间发言后重试</small></div>';
+        return;
+      }
+      roomId=boundRoom;
+      document.getElementById('roomTitle').textContent='· '+ name.room_name;
+      await loadData();
+      return;
+    }
+
+    sel.innerHTML=data.map(x=>`<option value="${x.room_id}">${esc(x.room_name)} (${x.count}条)</option>`).join('');
+    if(data.length===0){
+      sel.innerHTML='<option value="0">暂无直播间</option>';
+      return;
+    }
+    const saved=parseInt(localStorage.getItem('sq_room')||'0');
+    roomId=saved&&data.some(x=>x.room_id===saved)?saved:data[0].room_id;
+    sel.value=roomId;
+    await loadData();
+  }catch(e){}
+}
+function switchRoom(){
+  roomId=parseInt(document.getElementById('roomSel').value);
+  localStorage.setItem('sq_room',String(roomId));
+  loadData();
+}
+async function loadData(){
+  if(!roomId)return;
+  try{
+    const r=await fetch('/api/playlist?room_id='+roomId);
+    items=await r.json();
+    render();
+  }catch(e){}
+}
+function render(){
+  const st=document.getElementById('stats');
+  const cnt={};items.forEach(i=>cnt[i.status]=(cnt[i.status]||0)+1);
+  st.innerHTML=Object.entries(LABELS).map(([k,v])=>
+    cnt[k]?`<span class="stat ${k}">${ICONS[k]} ${v} ${cnt[k]}</span>`:'').join('');
+  const ls=document.getElementById('list');
+  if(!items.length){ls.innerHTML='<div class="empty">📭 点播单为空<br><small>在上方输入歌名来点歌吧～</small></div>';return;}
+  ls.innerHTML=items.map((e,i)=>{
+    const chk=selected.has(i)?'checked':'';
+    return `<div class="item ${e.status}">
+      <input type="checkbox" class="cb" ${chk} onchange="toggleSel(${i})">
+      <span class="idx">#${e.index||i+1}</span>
+      <span class="name">『${esc(e.song_name)}』</span>
+      <span class="user">@${esc(e.user_name)}</span>
+      <span class="badge ${e.status}">${LABELS[e.status]||e.status}</span>
+      <div class="actions">
+        <button class="btn" title="播放中" ${e.status==='playing'?'disabled':''} onclick="setStatus(${i},'playing')">🎵</button>
+        <button class="btn" title="操作中" ${e.status==='working'?'disabled':''} onclick="setStatus(${i},'working')">🔧</button>
+        <button class="btn" title="完成" ${e.status==='done'?'disabled':''} onclick="setStatus(${i},'done')">✅</button>
+        <button class="btn" title="重置" ${e.status==='pending'?'disabled':''} onclick="setStatus(${i},'pending')">🔄</button>
+        <button class="btn" style="color:var(--danger)" onclick="delItem(${i})">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('batchBar').style.display=selected.size?'flex':'none';
+  document.getElementById('selCount').textContent='已选 '+selected.size+' 项';
+}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function toast(msg,cls){const el=document.getElementById('toast');el.className='toast '+cls;el.textContent=msg;setTimeout(()=>el.className='',2500)}
+function toggleSel(i){selected.has(i)?selected.delete(i):selected.add(i);render()}
+function clearSel(){selected.clear();render()}
+async function addSong(){
+  const inp=document.getElementById('addInput'),name=inp.value.trim();
+  if(!name||!roomId)return;
+  await fetch('/api/add?room_id='+roomId,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({song_name:name})});
+  inp.value='';await loadData();toast('✅ 已添加：'+name,'ok');
+}
+async function setStatus(i,st){
+  await fetch('/api/status?room_id='+roomId,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({index:i,status:st})});
+  await loadData();
+}
+async function delItem(i){
+  if(!confirm('确定删除 #'+(i+1)+'？'))return;
+  await fetch('/api/delete?room_id='+roomId,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({index:i})});
+  selected.delete(i);await loadData();
+}
+async function batchStatus(st){
+  const idx=[...selected].sort((a,b)=>b-a);
+  for(const i of idx)await fetch('/api/status?room_id='+roomId,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({index:i,status:st})});
+  clearSel();await loadData();
+}
+async function batchDelete(){
+  if(!confirm('确定删除选中的 '+selected.size+' 项？'))return;
+  const idx=[...selected].sort((a,b)=>b-a);
+  for(const i of idx)await fetch('/api/delete?room_id='+roomId,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({index:i})});
+  clearSel();await loadData();
+}
+loadRooms();setInterval(loadData,5000);
+</script>
+</body>
+</html>

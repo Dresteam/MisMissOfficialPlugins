@@ -1,0 +1,50 @@
+{
+    "pinyin_enabled": {
+        "type": "boolean",
+        "default": true,
+        "description": "是否在欢迎消息前附加用户名拼音"
+    },
+    "pinyin_prefix": {
+        "type": "string",
+        "default": "✐[拼音] ",
+        "description": "拼音行前缀装饰符"
+    },
+    "welcome_phrases": {
+        "type": "template_list",
+        "default": [
+            "欢迎 @{user}，吧唧一口，吃掉所有不开心~",
+            "欢迎 @{user} 💝 心动预警！你出现的瞬间，连风都是甜的",
+            "@{user} 闪亮登场！今日份甜度已超标🍬",
+            "@{user} 降落成功～ 一把抱住，蹭蹭你的可爱⚡",
+            "@{user} 来咯~ 我的开心正在载入中... 100% 💖"
+        ],
+        "description": "随机欢迎语模板（@{user} 会被替换为 @用户名）"
+    },
+    "first_visit_phrases": {
+        "type": "template_list",
+        "default": [
+            "🎉 初次见面！欢迎 @{user} 来到直播间~",
+            "✨ @{user}，这是我们初次相遇，也是我们故事的开始(*´∇｀*)",
+            "🌟 @{user}，撒花欢迎，现在关注以后就是老粉啦~"
+        ],
+        "description": "用户首次到访时专用的欢迎语模板（为空则退回到 welcome_phrases）"
+    },
+    "anonymous_phrases": {
+        "type": "template_list",
+        "default": [
+            "匿名大佬，别躲啦，出来聊聊天吧~",
+            "欢迎匿名大佬加入直播间~"
+        ],
+        "description": "匿名用户（id=0）专用的欢迎语模板（为空则退回到 first_visit_phrases）"
+    },
+    "anonymous_cooldown": {
+        "type": "float",
+        "default": 30.0,
+        "description": "匿名用户欢迎冷却时间（秒），同一冷却期内连续进入的匿名用户只欢迎一次"
+    },
+    "enabled_rooms": {
+        "type": "array",
+        "default": [],
+        "description": "启用本插件的直播间 ID 列表（空列表表示所有直播间均启用）"
+    }
+}

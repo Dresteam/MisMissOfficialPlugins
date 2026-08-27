@@ -1,0 +1,20 @@
+{
+  "type": "playlist",
+  "api": "/api/plugin/song_request/ui/playlist",
+  "columns": [
+    { "key": "song_name", "label": "歌名" },
+    { "key": "user_name", "label": "点播者" },
+    { "key": "status", "label": "状态", "type": "badge" }
+  ],
+  "add_action": {
+    "label": "+ 添加点播",
+    "method": "POST",
+    "url": "/api/plugin/song_request/ui/add",
+    "prompt_field": { "key": "song_name", "label": "歌名", "placeholder": "输入歌曲名称..." }
+  },
+  "status_actions": [
+    { "label": "播放中", "status": "playing", "icon": "🎵" },
+    { "label": "操作中", "status": "working", "icon": "🔧" },
+    { "label": "已完成", "status": "done", "icon": "✅" }
+  ]
+}

@@ -1,0 +1,107 @@
+{
+    "cmd_zodiac": {
+        "type": "string",
+        "default": "星座",
+        "description": "星座指令名"
+    },
+    "cmd_zodiac_aliases": {
+        "type": "array",
+        "default": ["运势"],
+        "description": "星座指令别名"
+    },
+    "enabled_rooms": {
+        "type": "array",
+        "default": [],
+        "description": "启用本插件的直播间 ID 列表（空=全部）"
+    },
+    "help_text": {
+        "type": "string",
+        "default": "@{u} 请输入星座名，如：星座 天蝎座",
+        "description": "缺少星座名时的提示（{u}=用户名）"
+    },
+    "unknown_text": {
+        "type": "string",
+        "default": "@{u} 没有找到这个星座哦，试试：星座 天蝎座",
+        "description": "星座名未识别时的提示（{u}=用户名）"
+    },
+    "fetch_fail_text": {
+        "type": "string",
+        "default": "@{u} 运势查询失败啦，稍后再试试吧~",
+        "description": "API 失败且本地兜底关闭时的提示（{u}=用户名）"
+    },
+    "api_base": {
+        "type": "string",
+        "default": "https://v2.xxapi.cn/api/horoscope?type={type}&time={time}",
+        "description": "xxapi 接口地址模板（{type}=星座英文名，{time}=时间类型）"
+    },
+    "time_type": {
+        "type": "string",
+        "default": "today",
+        "description": "运势时间类型：today/week/month/year"
+    },
+    "fallback_local": {
+        "type": "boolean",
+        "default": true,
+        "description": "API 失败时是否回退本地生成好运运势"
+    },
+    "title_line": {
+        "type": "string",
+        "default": "　　　{e}{n}运势{e}",
+        "description": "标题行模板（{e}=星座符号，{n}=星座名）"
+    },
+    "love_line": {
+        "type": "string",
+        "default": "感情：{v}%",
+        "description": "感情行模板（{v}=数值）"
+    },
+    "health_line": {
+        "type": "string",
+        "default": "健康：{v}%　幸运颜色：{c}",
+        "description": "健康行模板（{v}=数值，{c}=幸运颜色）"
+    },
+    "money_line": {
+        "type": "string",
+        "default": "财运：{v}%　幸运数字：{n}",
+        "description": "财运行模板（{v}=数值，{n}=幸运数字）"
+    },
+    "work_line": {
+        "type": "string",
+        "default": "工作：{v}%　速配星座：{f}",
+        "description": "工作行模板（{v}=数值，{f}=速配星座）"
+    },
+    "all_line": {
+        "type": "string",
+        "default": "综合：{v}%",
+        "description": "综合行模板（{v}=数值）"
+    },
+    "separator": {
+        "type": "string",
+        "default": "┈┈┈┈┈{t}┈┈┈┈┈",
+        "description": "运势分隔线（{t}=运势类型，如 今日运势）"
+    },
+    "summary_prefix": {
+        "type": "string",
+        "default": "　　",
+        "description": "运势摘要缩进前缀"
+    },
+    "show_todo": {
+        "type": "boolean",
+        "default": false,
+        "description": "是否显示宜/忌行"
+    },
+    "todo_line": {
+        "type": "string",
+        "default": "宜：{yi}　忌：{ji}",
+        "description": "宜忌行模板（{yi}=宜，{ji}=忌）"
+    },
+    "score_min": {
+        "type": "int",
+        "default": 70,
+        "description": "本地兜底运势数值下限"
+    },
+    "score_max": {
+        "type": "int",
+        "default": 99,
+        "description": "本地兜底运势数值上限"
+    }
+}

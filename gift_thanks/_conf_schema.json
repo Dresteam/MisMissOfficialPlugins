@@ -1,0 +1,182 @@
+{
+    "enabled_rooms": {
+        "type": "array",
+        "default": [],
+        "description": "启用本插件的直播间 ID 列表（空列表表示全部启用）"
+    },
+    "thank_prefix": {
+        "type": "string",
+        "default": "感谢小可爱的投喂订单：",
+        "description": "@用户名 之后的感谢语前缀"
+    },
+    "header_art": {
+        "type": "string",
+        "default": "　ᕱ ⑅ ᕱ\n　(,,>᎑<,,) 谢谢礼物！\n╭♡★-- ℒ ℴ 𝓋 ℯ --★ʚ♡ɞ╮\n❀",
+        "description": "消息头部的 ASCII 装饰画"
+    },
+    "gift_line_format": {
+        "type": "string",
+        "default": "┆　• {gift_name}：{gift_emoji}*{gift_num}个",
+        "description": "礼物行格式（{gift_name}/{gift_emoji}/{gift_num} 会被替换）"
+    },
+    "value_line_format": {
+        "type": "string",
+        "default": "价值：{gift_value}💗",
+        "description": "非猫粮/猫罐头且总价值大于 0 时在 frame 下方显示的礼物价值行（{gift_value} 会被替换）"
+    },
+    "lucky_round_format": {
+        "type": "string",
+        "default": "🍀 本轮幸运值：{lucky_percent}%",
+        "description": "幸运礼物本轮幸运值行（{lucky_percent} 会被替换）"
+    },
+    "lucky_total_format": {
+        "type": "string",
+        "default": "📊 累计幸运值：{total_lucky_percent}%",
+        "description": "幸运礼物累计幸运值行（{total_lucky_percent} 会被替换）"
+    },
+    "footer_art": {
+        "type": "string",
+        "default": "╰ʚ♡ɞ┈┈┈┈┈┈┈♡╯",
+        "description": "消息底部的 ASCII 装饰画"
+    },
+    "cat_food_names": {
+        "type": "array",
+        "default": ["猫粮", "猫罐头"],
+        "description": "视为猫粮/猫罐头的礼物名称列表（精确匹配）"
+    },
+    "cat_food_emoji": {
+        "type": "string",
+        "default": "🐱",
+        "description": "猫粮类礼物使用的 emoji（默认 🐱）"
+    },
+    "default_gift_emoji": {
+        "type": "string",
+        "default": "🎁",
+        "description": "非猫粮类礼物使用的默认 emoji（默认 🎁）"
+    },
+    "gift_emoji_map": {
+        "type": "object",
+        "default": {},
+        "description": "特定礼物名称 → emoji 的映射（优先级高于 cat_food_names 和 default_gift_emoji）"
+    },
+    "batch_enabled": {
+        "type": "boolean",
+        "default": true,
+        "description": "是否启用礼物聚合：同一用户在同一直播间延迟时间内连续送礼时合并为一条感谢消息"
+    },
+    "batch_delay": {
+        "type": "float",
+        "default": 3.0,
+        "description": "礼物聚合延迟（秒）：在此时间内同一用户的新礼物会重置计时并合并"
+    },
+    "board_cmd_white": {
+        "type": "string",
+        "default": "白榜",
+        "description": "白榜指令名（幸运值从高到低）"
+    },
+    "board_cmd_black": {
+        "type": "string",
+        "default": "黑榜",
+        "description": "黑榜指令名（幸运值从低到高）"
+    },
+    "board_cmd_both": {
+        "type": "string",
+        "default": "黑白榜",
+        "description": "黑白榜指令名（显示白榜内容）"
+    },
+    "board_admin_only": {
+        "type": "boolean",
+        "default": false,
+        "description": "榜单指令是否仅管理员可用"
+    },
+    "board_page_size": {
+        "type": "int",
+        "default": 8,
+        "description": "榜单每页条目数"
+    },
+    "board_threshold": {
+        "type": "float",
+        "default": 100.0,
+        "description": "白榜/黑榜幸运值分界阈值：白榜显示 ≥ 阈值的用户，黑榜显示 < 阈值的用户（设为 0 时黑榜不筛选、包含全部用户）"
+    },
+    "board_title_white": {
+        "type": "string",
+        "default": "白榜",
+        "description": "白榜标题文本"
+    },
+    "board_title_both": {
+        "type": "string",
+        "default": "黑白榜",
+        "description": "黑白榜标题文本（显示白榜内容）"
+    },
+    "board_white_header": {
+        "type": "string",
+        "default": "🌝“看看谁是白白的小朋友",
+        "description": "白榜头部文案"
+    },
+    "board_white_title": {
+        "type": "string",
+        "default": "———— ✨{type}✨ ————",
+        "description": "白榜标题行模板（{type}=白榜/黑白榜）"
+    },
+    "board_white_teaser": {
+        "type": "string",
+        "default": "✰白白的小朋友o(o･`з´o)ﾉ!!!，太欧啦，快让大家都来蹭蹭你的欧气叭~",
+        "description": "白榜调侃文案行"
+    },
+    "board_white_subtitle": {
+        "type": "string",
+        "default": "——— ̗̀♡ʚ 白云榜 ɞ♡ ̖́———",
+        "description": "白榜副标题行"
+    },
+    "board_white_item_line": {
+        "type": "string",
+        "default": "🤍小云朵：@{name}    {value}%",
+        "description": "白榜条目行模板（{name}=用户名，{value}=幸运值，固定保留一位小数）"
+    },
+    "board_white_page_line": {
+        "type": "string",
+        "default": "𓆝𓆟𓆜𓆞𓆡𓆝𓆟𓆜𓆞（{page}/{pages}页）",
+        "description": "白榜页码行模板（{page}=当前页，{pages}=总页数）"
+    },
+    "board_white_empty_text": {
+        "type": "string",
+        "default": "@{u} 还没有白白的小朋友上榜哦~",
+        "description": "白榜空榜提示（{u}=查询者用户名）"
+    },
+    "board_black_header": {
+        "type": "string",
+        "default": "🌚“看看谁是最黑的小朋友",
+        "description": "黑榜头部文案"
+    },
+    "board_black_title": {
+        "type": "string",
+        "default": "———— ✨黑榜✨ ————",
+        "description": "黑榜标题行"
+    },
+    "board_black_teaser": {
+        "type": "string",
+        "default": "✰黑黑的小朋友o(o･`з´o)ﾉ!!!，快去让主播洗个手祝你白白哒叭~",
+        "description": "黑榜调侃文案行"
+    },
+    "board_black_subtitle": {
+        "type": "string",
+        "default": "——— ̗̀♡ʚ 煤球榜 ɞ♡ ̖́———",
+        "description": "黑榜副标题行"
+    },
+    "board_black_item_line": {
+        "type": "string",
+        "default": "🌑小煤球：@{name}    {value}%",
+        "description": "黑榜条目行模板（{name}=用户名，{value}=幸运值，固定保留一位小数）"
+    },
+    "board_black_page_line": {
+        "type": "string",
+        "default": "𓆝𓆟𓆜𓆞𓆡𓆝𓆟𓆜𓆞（{page}/{pages}页）",
+        "description": "黑榜页码行模板（{page}=当前页，{pages}=总页数）"
+    },
+    "board_black_empty_text": {
+        "type": "string",
+        "default": "@{u} 还没有黑黑的小朋友上榜哦~",
+        "description": "黑榜空榜提示（{u}=查询者用户名）"
+    }
+}

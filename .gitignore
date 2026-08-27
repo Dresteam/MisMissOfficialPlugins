@@ -1,0 +1,10 @@
+# Python 缓存
+__pycache__/
+*.py[cod]
+
+# 打包产物（本地生成，不入库）
+*.zip
+
+# 测试/示例插件（不发布到官方仓库）
+error_plugin/
+example_plugin/

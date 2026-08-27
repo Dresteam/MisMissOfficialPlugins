@@ -1,0 +1,6 @@
+name: timer_messages
+desc: 定时消息插件——注册多条定时消息，每条可指定目标直播间，由 Bot 轮转发送
+author: MisMiss
+version: 1.0.0
+short_desc: 定时消息插件（多条 + 指定直播间）
+display_name: 定时消息插件

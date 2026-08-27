@@ -1,0 +1,6 @@
+name: follow_thanks
+desc: 用户关注直播间时自动发送随机感谢消息，支持拼音模式、首次关注专属语、冷却时间
+author: MisMiss
+version: 1.0.1
+short_desc: 关注感谢插件（随机感谢语 + 首关检测 + 拼音模式 + 冷却）
+display_name: 关注感谢插件

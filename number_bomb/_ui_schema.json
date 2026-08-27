@@ -1,0 +1,88 @@
+{
+  "type": "composite",
+  "sections": [
+    {
+      "title": "对局概览",
+      "type": "stats",
+      "api": "/api/plugin/number_bomb/ui/stats",
+      "fields": [
+        { "key": "running", "label": "进行中", "subtitle": "直播间数" },
+        { "key": "ready", "label": "准备中", "subtitle": "直播间数" },
+        { "key": "players", "label": "参与玩家", "subtitle": "全部直播间" }
+      ]
+    },
+    {
+      "title": "直播间对局",
+      "type": "table",
+      "api": "/api/plugin/number_bomb/ui/rooms",
+      "columns": [
+        { "key": "room_id", "label": "房间ID" },
+        { "key": "room_name", "label": "直播间" },
+        {
+          "key": "status",
+          "label": "状态",
+          "type": "badge",
+          "badge_colors": {
+            "进行中": "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+            "准备中": "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+            "未初始化": "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
+          }
+        },
+        { "key": "range", "label": "范围" },
+        { "key": "player_count", "label": "人数", "type": "number" },
+        { "key": "players", "label": "玩家列表", "type": "text" },
+        { "key": "current_player", "label": "当前玩家" }
+      ],
+      "actions": [
+        {
+          "label": "初始化",
+          "method": "POST",
+          "url": "/api/plugin/number_bomb/ui/action",
+          "body_template": { "action": "init", "room_id": "{{row.room_id}}" },
+          "show_when": "can_init"
+        },
+        {
+          "label": "开始游戏",
+          "method": "POST",
+          "url": "/api/plugin/number_bomb/ui/action",
+          "body_template": { "action": "start", "room_id": "{{row.room_id}}" },
+          "show_when": "can_start"
+        },
+        {
+          "label": "跳过",
+          "method": "POST",
+          "url": "/api/plugin/number_bomb/ui/action",
+          "body_template": { "action": "skip", "room_id": "{{row.room_id}}" },
+          "show_when": "can_skip"
+        },
+        {
+          "label": "结束游戏",
+          "method": "POST",
+          "url": "/api/plugin/number_bomb/ui/action",
+          "body_template": { "action": "end", "room_id": "{{row.room_id}}" },
+          "show_when": "can_end"
+        },
+        {
+          "label": "停止游戏",
+          "method": "POST",
+          "url": "/api/plugin/number_bomb/ui/action",
+          "body_template": { "action": "end", "room_id": "{{row.room_id}}" },
+          "show_when": "can_stop"
+        }
+      ]
+    },
+    {
+      "title": "自定义范围初始化",
+      "type": "form",
+      "submit": {
+        "label": "初始化对局",
+        "method": "POST",
+        "url": "/api/plugin/number_bomb/ui/init"
+      },
+      "form_fields": [
+        { "key": "room_id", "label": "直播间ID", "type": "number", "required": true, "placeholder": "如 123456789" },
+        { "key": "max_number", "label": "最大数字（可选）", "type": "number", "placeholder": "留空使用当前/默认值" }
+      ]
+    }
+  ]
+}

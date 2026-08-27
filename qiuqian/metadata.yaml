@@ -1,0 +1,6 @@
+name: qiuqian
+desc: 求签插件——发送 求签/抽签 随机抽取诸葛神算签文（每次发送实时解签+本地缓存），回复签号、吉凶、签诗与解签
+author: MisMiss
+version: 1.0.0
+short_desc: 求签插件（诸葛神算签文，实时解签+本地缓存）
+display_name: 求签插件

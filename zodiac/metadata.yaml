@@ -1,0 +1,6 @@
+name: zodiac
+desc: 星座运势插件——发送 星座 xx(座) 查看运势（xxapi 数据源，感情/健康/财运/工作/综合 + 幸运颜色/数字/速配星座），按天缓存，失败自动本地兜底
+author: MisMiss
+version: 1.0.0
+short_desc: 星座运势插件（xxapi 数据源 + 按天缓存）
+display_name: 星座运势插件

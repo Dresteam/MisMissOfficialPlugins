@@ -1,0 +1,6 @@
+name: song_request
+desc: 用户点播系统——点播加入点播单、查看点播单、管理员标记完成/删除
+author: MisMiss
+version: 1.0.1
+short_desc: 点播插件（点播 + 点播单 + 完成 + 删除）
+display_name: 点播插件

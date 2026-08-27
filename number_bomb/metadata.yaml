@@ -1,0 +1,6 @@
+name: number_bomb
+desc: 数字炸弹小游戏——授权用户发起 数字炸弹，观众 加入/退出，开始后轮流猜数缩区间，猜中炸弹者输；按直播间隔离，多房间可同时开局
+author: MisMiss
+version: 1.0.0
+short_desc: 数字炸弹小游戏（多房间独立开局）
+display_name: 数字炸弹插件

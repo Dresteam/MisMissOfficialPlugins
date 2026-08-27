@@ -1,0 +1,157 @@
+{
+    "enabled_rooms": {
+        "type": "array",
+        "default": [],
+        "description": "启用本插件的直播间 ID 列表（空=全部）"
+    },
+    "op_users": {
+        "type": "array",
+        "default": [],
+        "description": "授权用户 ID 列表（可发起/开始/结束/跳过游戏）"
+    },
+    "allow_admins": {
+        "type": "boolean",
+        "default": true,
+        "description": "直播间管理员是否视为授权用户"
+    },
+    "default_max_number": {
+        "type": "int",
+        "default": 100,
+        "description": "未指定范围时默认的最大数字"
+    },
+    "min_max_number": {
+        "type": "int",
+        "default": 10,
+        "description": "允许设置的最小最大数字"
+    },
+    "cmd_ready": {
+        "type": "string",
+        "default": "数字炸弹",
+        "description": "发起准备指令名（可带范围参数）"
+    },
+    "cmd_join": {
+        "type": "array",
+        "default": ["加入", "+"],
+        "description": "加入游戏指令列表"
+    },
+    "cmd_quit": {
+        "type": "array",
+        "default": ["退出", "-"],
+        "description": "退出游戏指令列表"
+    },
+    "cmd_start_game": {
+        "type": "string",
+        "default": "开始",
+        "description": "开始游戏指令名"
+    },
+    "cmd_end_game": {
+        "type": "string",
+        "default": "结束",
+        "description": "强制结束游戏指令名"
+    },
+    "cmd_skip": {
+        "type": "string",
+        "default": "跳过",
+        "description": "跳过当前玩家指令名"
+    },
+    "msg_ready": {
+        "type": "string",
+        "default": "[数字炸弹] 已经准备完成啦，可以发送 [加入] 或者 [+] 加入游戏~",
+        "description": "准备完成提示"
+    },
+    "msg_running": {
+        "type": "string",
+        "default": "游戏正在进行中哦~",
+        "description": "游戏进行中提示"
+    },
+    "msg_not_ready": {
+        "type": "string",
+        "default": "还没有初始化游戏哦，请先发送 数字炸弹~",
+        "description": "房间从未初始化游戏时的提示"
+    },
+    "msg_not_started": {
+        "type": "string",
+        "default": "游戏未在进行中",
+        "description": "跳过/结束操作时游戏未在进行中的提示（Web 操作反馈）"
+    },
+    "msg_no_permission": {
+        "type": "string",
+        "default": "没有权限使用该命令~",
+        "description": "无权限提示"
+    },
+    "msg_invalid_range": {
+        "type": "string",
+        "default": "请输入正确的范围~",
+        "description": "范围参数非法提示"
+    },
+    "msg_range_min": {
+        "type": "string",
+        "default": "数字范围不可小于 {min} 哦~",
+        "description": "范围过小提示（{min}=最小允许值）"
+    },
+    "msg_already_in": {
+        "type": "string",
+        "default": "已经在游戏中啦~",
+        "description": "重复加入提示"
+    },
+    "msg_join_ok": {
+        "type": "string",
+        "default": "加入成功~",
+        "description": "加入成功提示"
+    },
+    "msg_quit_ok": {
+        "type": "string",
+        "default": "退出成功~",
+        "description": "退出成功提示"
+    },
+    "msg_not_in": {
+        "type": "string",
+        "default": "未在游戏中哦~",
+        "description": "未在游戏中提示"
+    },
+    "msg_not_enough": {
+        "type": "string",
+        "default": "游戏人数不足~",
+        "description": "人数不足提示"
+    },
+    "msg_start_header": {
+        "type": "string",
+        "default": "游戏开始！顺序：",
+        "description": "开局顺序标题"
+    },
+    "msg_order_line": {
+        "type": "string",
+        "default": "{rank} - {name}",
+        "description": "顺序条目模板（{rank}=名次，{name}=用户名）"
+    },
+    "msg_notify": {
+        "type": "string",
+        "default": "🎯 @{name} 请发送 [{lower}, {upper}] 的一个数~",
+        "description": "当前玩家猜数提示（{name}/{lower}/{upper}）"
+    },
+    "msg_skip": {
+        "type": "string",
+        "default": "⏭️ 已跳过 @{name}\n👉 轮到 @{next}，当前范围：[{lower}, {upper}]",
+        "description": "轮转提示（{name}=被跳过者，{next}=下一位，{lower}/{upper}=范围）"
+    },
+    "msg_out_of_range": {
+        "type": "string",
+        "default": "请发送位于 [{lower}, {upper}] 区间内的一个数~",
+        "description": "猜数越界提示（{lower}/{upper}）"
+    },
+    "msg_game_over": {
+        "type": "string",
+        "default": "🎉 游戏结束，@{name} 猜中了数字！",
+        "description": "游戏结束提示（{name}=猜中者）"
+    },
+    "msg_force_end": {
+        "type": "string",
+        "default": "游戏已强制结束",
+        "description": "强制结束提示（进行中时）"
+    },
+    "msg_force_stop": {
+        "type": "string",
+        "default": "游戏已强制停止",
+        "description": "强制停止提示（准备阶段清空玩家并回到未初始化）"
+    }
+}

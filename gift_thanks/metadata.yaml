@@ -1,0 +1,6 @@
+name: gift_thanks
+desc: 收到礼物时自动发送个性化感谢消息，支持猫粮特殊处理、礼物价值展示、幸运礼物统计（按直播间隔离）、白榜/黑榜/黑白榜幸运值排行指令
+author: MisMiss
+version: 1.2.0
+short_desc: 礼物感谢插件（猫粮emoji + 价值展示 + 幸运统计 + 黑白榜）
+display_name: 礼物感谢插件

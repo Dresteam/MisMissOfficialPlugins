@@ -1,0 +1,67 @@
+{
+    "cmd_checkin": {
+        "type": "string",
+        "default": "签到",
+        "description": "签到指令名"
+    },
+    "cmd_checkin_aliases": {
+        "type": "array",
+        "default": ["打卡", "dd"],
+        "description": "签到指令别名（精确匹配）"
+    },
+    "enabled_rooms": {
+        "type": "array",
+        "default": [],
+        "description": "启用本插件的直播间 ID 列表（空=全部）"
+    },
+    "header": {
+        "type": "string",
+        "default": "———⋆⁺₊⋆☾⋆⁺₊ ———",
+        "description": "消息顶部装饰线"
+    },
+    "border": {
+        "type": "string",
+        "default": "•────⋆⁺₊⋆☾⋆⁺₊⋆────•",
+        "description": "消息中部/底部装饰线"
+    },
+    "success_emoji": {
+        "type": "string",
+        "default": "· .⋆ 🪐✨打卡成功咯✨🪐⋆. ·",
+        "description": "首次打卡 emoji 行"
+    },
+    "success_title": {
+        "type": "string",
+        "default": "\"你是今天第{n}位签到的宝贝哦~",
+        "description": "首次打卡标题（{n}=今日第几位）"
+    },
+    "repeat_text": {
+        "type": "string",
+        "default": "小可爱今天已经打过卡了哦",
+        "description": "重复打卡提示文案"
+    },
+    "stats_emoji": {
+        "type": "string",
+        "default": "· .⋆ 🪐✨打卡统计✨🪐⋆. ·",
+        "description": "统计区块 emoji 行"
+    },
+    "stat_total": {
+        "type": "string",
+        "default": "┊ 🎐 累计签到次数：{v}",
+        "description": "累计签到行（{v}=数值）"
+    },
+    "stat_month": {
+        "type": "string",
+        "default": "┊ 🎐 本月签到次数：{v}",
+        "description": "本月签到行"
+    },
+    "stat_week": {
+        "type": "string",
+        "default": "┊ 🎐 本周签到次数：{v}",
+        "description": "本周签到行"
+    },
+    "stat_streak": {
+        "type": "string",
+        "default": "┊ 🎐 连续签到次数：{v}",
+        "description": "连续签到行"
+    }
+}
