@@ -1,0 +1,27 @@
+{
+    "enabled_rooms": {
+        "type": "array",
+        "default": [],
+        "description": "启用本插件的直播间 ID 列表（空=全部）"
+    },
+    "header_format": {
+        "type": "string",
+        "default": "🙋♂️{user}提问了哦",
+        "description": "提问播报头部（{user}=提问者用户名）"
+    },
+    "decor_line": {
+        "type": "string",
+        "default": "✨🌛✨✨✨☀️✨✨✨✨",
+        "description": "装饰分隔行（留空则不显示）"
+    },
+    "content_format": {
+        "type": "string",
+        "default": "提问内容：{text}",
+        "description": "提问内容行（{text}=提问文本）"
+    },
+    "value_format": {
+        "type": "string",
+        "default": "提问价值：{price}钻💎",
+        "description": "提问价值行（{price}=价值）"
+    }
+}

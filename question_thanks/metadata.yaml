@@ -1,0 +1,6 @@
+name: question_thanks
+desc: 提问感谢插件——用户发起付费提问时自动发送感谢消息（提问内容 + 提问价值）
+author: MisMiss
+version: 1.0.0
+short_desc: 提问感谢插件（提问播报 + 价值展示）
+display_name: 提问感谢插件

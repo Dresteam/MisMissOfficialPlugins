@@ -453,17 +453,20 @@ class GiftThanksPlugin(Plugin):
         """
         if board_type == "black":
             return self._build_black_board(cfg, user_name, live_id, page)
-        return self._build_white_board(cfg, user_name, live_id, board_type, page)
+        if board_type == "both":
+            return self._build_both_board(cfg, user_name, live_id, page)
+        return self._build_white_board(cfg, user_name, live_id, page)
 
     def _collect_board_entries(
         self, cfg: MissConfig, live_id: int, board_type: str
     ) -> list[tuple[float, str, int]]:
-        """收集并排序榜单条目（按直播间隔离）。
+        """收集并排序榜单条目（按直播间隔离，幸运值从高到低）。
 
-        白榜：幸运值 ≥ 阈值，从高到低；
-        黑榜：幸运值 < 阈值，从低到高（最黑的小朋友排第一）。
+        白榜：仅幸运值 ≥ 阈值；
+        黑榜：仅幸运值 < 阈值（阈值为 0 时不筛选）；
+        黑白榜：全部用户混合，降序排列。
 
-        :return: [(幸运值, 用户名, user_id), ...] 已排序
+        :return: [(幸运值, 用户名, user_id), ...] 已排序（降序）
         """
         threshold = cfg.get_float("board_threshold", 100.0)
         room_stats = self._lucky_stats.get(live_id, {})
@@ -478,13 +481,11 @@ class GiftThanksPlugin(Plugin):
         ]
         if board_type == "black":
             if threshold > 0:
-                # 阈值为 0 时不筛选（黑榜包含全部用户）
                 entries = [e for e in entries if e[0] < threshold]
-            # 从低到高：幸运值最低的排第一
-            entries.sort(key=lambda e: (e[0], e[2]))
-        else:
+        elif board_type == "white":
             entries = [e for e in entries if e[0] >= threshold]
-            entries.sort(key=lambda e: (e[0], -e[2]), reverse=True)
+        # both：不过滤；全部从高到低
+        entries.sort(key=lambda e: (-e[0], e[2]))
         return entries
 
     @staticmethod
@@ -505,37 +506,29 @@ class GiftThanksPlugin(Plugin):
         cfg: MissConfig,
         user_name: str,
         live_id: int,
-        board_type: str,
         page: int,
     ) -> str:
-        """构建白榜/黑白榜消息（小云朵样式，幸运值 ≥ 阈值，从高到低）。"""
-        entries = self._collect_board_entries(cfg, live_id, board_type)
+        """构建白榜消息（小福星样式，幸运值 ≥ 阈值，从高到低）。"""
+        entries = self._collect_board_entries(cfg, live_id, "white")
         page_entries, page, total_pages = self._paginate(cfg, entries, page)
-
-        title = {
-            "white": cfg.get_str("board_title_white", "白榜"),
-            "both": cfg.get_str("board_title_both", "黑白榜"),
-        }[board_type]
 
         lines: list[str] = []
 
-        header = cfg.get_str("board_white_header", "🌝“看看谁是白白的小朋友")
+        header = cfg.get_str("board_white_header", "🌕“看看谁是最白的小朋友")
         if header:
             lines.append(header)
 
+        title = cfg.get_str("board_title_white", "白榜")
         title_line = cfg.get_str(
             "board_white_title", "———— ✨{type}✨ ————"
         ).replace("{type}", title)
         lines += ["", title_line]
 
-        teaser = cfg.get_str(
-            "board_white_teaser",
-            "✰白白的小朋友o(o･`з´o)ﾉ!!!，太欧啦，快让大家都来蹭蹭你的欧气叭~",
-        )
+        teaser = cfg.get_str("board_white_teaser", "")
         if teaser:
             lines += ["", teaser]
 
-        subtitle = cfg.get_str("board_white_subtitle", "——— ̗̀♡ʚ 白云榜 ɞ♡ ̖́———")
+        subtitle = cfg.get_str("board_white_subtitle", "——— ̗̀♡ʚ 福星榜 ɞ♡ ̖́———")
         lines += ["", subtitle]
 
         if not entries:
@@ -545,11 +538,10 @@ class GiftThanksPlugin(Plugin):
             lines += ["", empty]
         else:
             item_fmt = cfg.get_str(
-                "board_white_item_line", "🤍小云朵：@{name}    {value}%"
+                "board_white_item_line", "⭐️小福星：@{name}    {value}%"
             )
             lines.append("")
             for value, name, _uid in page_entries:
-                # 与黑榜一致：数值固定保留一位小数
                 lines.append(
                     item_fmt.replace("{name}", name)
                     .replace("{value}", f"{value:.1f}")
@@ -557,6 +549,59 @@ class GiftThanksPlugin(Plugin):
 
         page_line = cfg.get_str(
             "board_white_page_line", "𓆝𓆟𓆜𓆞𓆡𓆝𓆟𓆜𓆞（{page}/{pages}页）"
+        ).replace("{page}", str(page)).replace("{pages}", str(total_pages))
+        lines += ["", page_line]
+        return "\n".join(lines)
+
+    def _build_both_board(
+        self,
+        cfg: MissConfig,
+        user_name: str,
+        live_id: int,
+        page: int,
+    ) -> str:
+        """构建黑白榜消息（福星+煤球混合，从高到低）。"""
+        entries = self._collect_board_entries(cfg, live_id, "both")
+        page_entries, page, total_pages = self._paginate(cfg, entries, page)
+        threshold = cfg.get_float("board_threshold", 100.0)
+
+        lines: list[str] = []
+
+        header = cfg.get_str("board_both_header", "⭐️小福星榜&小煤球榜🌑")
+        if header:
+            lines.append(header)
+
+        sub_header = cfg.get_str("board_both_sub_header", "🌕“做最白的小耳朵，做小福星")
+        if sub_header:
+            lines += ["", sub_header]
+
+        title_line = cfg.get_str(
+            "board_both_title", "———— ✨小福星✨ ————"
+        )
+        lines += ["", title_line]
+
+        if not entries:
+            empty = cfg.get_str(
+                "board_both_empty_text", "@{u} 还没有上榜的小朋友哦~"
+            ).replace("{u}", user_name)
+            lines += ["", empty]
+        else:
+            fuxing_fmt = cfg.get_str(
+                "board_both_item_fuxing", "⭐️小福星：@{name}    {value}%"
+            )
+            meiqiu_fmt = cfg.get_str(
+                "board_both_item_meiqiu", "🌑小煤球：@{name}    {value}%"
+            )
+            lines.append("")
+            for value, name, _uid in page_entries:
+                fmt = fuxing_fmt if value >= threshold else meiqiu_fmt
+                lines.append(
+                    fmt.replace("{name}", name)
+                    .replace("{value}", f"{value:.1f}")
+                )
+
+        page_line = cfg.get_str(
+            "board_both_page_line", "𓆝𓆟𓆜𓆞𓆡𓆝𓆟𓆜𓆞（{page}/{pages}页）"
         ).replace("{page}", str(page)).replace("{pages}", str(total_pages))
         lines += ["", page_line]
         return "\n".join(lines)
