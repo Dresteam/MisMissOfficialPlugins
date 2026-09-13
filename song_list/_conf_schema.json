@@ -1,0 +1,37 @@
+{
+    "cmd_name": {
+        "type": "string",
+        "default": "歌单",
+        "description": "歌单指令名"
+    },
+    "cmd_aliases": {
+        "type": "array",
+        "default": ["歌曲列表", "点歌单"],
+        "description": "歌单指令别名"
+    },
+    "song_list": {
+        "type": "template_list",
+        "default": [
+            "晴天 - 周杰伦",
+            "夜曲 - 周杰伦",
+            "小幸运 - 田馥甄",
+            "起风了 - 买辣椒也用券"
+        ],
+        "description": "歌单歌曲列表（每行一首，按顺序输出）"
+    },
+    "header": {
+        "type": "string",
+        "default": "★--☁✨☁ 本场歌单☁✨☁--★",
+        "description": "歌单顶部装饰边框"
+    },
+    "item_prefix": {
+        "type": "string",
+        "default": "❥•{idx} ",
+        "description": "每行前缀模板（{idx}=序号）"
+    },
+    "footer": {
+        "type": "string",
+        "default": "══════ ᶫᵒᵛᵉᵧₒᵤ ══════",
+        "description": "歌单底部装饰边框"
+    }
+}

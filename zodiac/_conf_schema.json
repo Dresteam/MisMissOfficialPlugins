@@ -6,13 +6,10 @@
     },
     "cmd_zodiac_aliases": {
         "type": "array",
-        "default": ["运势"],
+        "default": [
+            "运势"
+        ],
         "description": "星座指令别名"
-    },
-    "enabled_rooms": {
-        "type": "array",
-        "default": [],
-        "description": "启用本插件的直播间 ID 列表（空=全部）"
     },
     "help_text": {
         "type": "string",

@@ -93,7 +93,6 @@ class GiftThanksPlugin(Plugin):
 
     配置项（来自 ``_conf_schema.json``）：
         - ``batch_enabled`` / ``batch_delay`` — 聚合开关与延迟
-        - ``enabled_rooms`` — 直播间过滤
         - ``thank_prefix`` / ``header_art`` / ``footer_art`` — 消息装饰
         - ``gift_line_format`` / ``value_line_format`` / ``lucky_line_format`` — 格式模板
         - ``cat_food_names`` / ``cat_food_emoji`` / ``default_gift_emoji`` — emoji
@@ -106,12 +105,12 @@ class GiftThanksPlugin(Plugin):
         super().__init__(permissions=permissions)
         self._config: MissConfig | None = None
 
-        # 幸运礼物累计统计（按直播间隔离）：
-        #   live_id → user_id → {"actual": int, "original": int, "name": str}
-        self._lucky_stats: dict[int, dict[int, dict[str, int | str]]] = {}
+        # 幸运礼物累计统计（账户级单实例，不再按直播间隔离）：
+        #   user_id → {"actual": int, "original": int, "name": str}
+        self._lucky_stats: dict[int, dict[str, int | str]] = {}
 
-        # 聚合状态：(live_id, user_id) → _UserBatch
-        self._batches: dict[tuple[int, int], _UserBatch] = defaultdict(_UserBatch)
+        # 聚合状态：user_id → _UserBatch
+        self._batches: dict[int, _UserBatch] = defaultdict(_UserBatch)
 
     # ------------------------------------------------------------------ #
     # 生命周期
@@ -129,7 +128,7 @@ class GiftThanksPlugin(Plugin):
 
         _log.info(
             "[GiftThanks] 就绪 (plugin_id={})  猫粮={}  定制emoji={}种  "
-            "聚合={} 延迟={}s  已记录直播间={}个",
+            "聚合={} 延迟={}s  已记录用户={}个",
             self.plugin_id,
             cat_food,
             len(emoji_map) if isinstance(emoji_map, dict) else 0,
@@ -143,7 +142,7 @@ class GiftThanksPlugin(Plugin):
         await self._flush_all()
         self._save_lucky_stats()
         _log.info(
-            "[GiftThanks] 已终止，{} 个直播间的幸运值统计已保存",
+            "[GiftThanks] 已终止，{} 个用户的幸运值统计已保存",
             len(self._lucky_stats),
         )
 
@@ -160,11 +159,7 @@ class GiftThanksPlugin(Plugin):
 
         gift = event.gift
 
-        # 1. 直播间过滤
-        live_id = event.livestream.live_id
-        enabled_rooms: list = cfg.get_int_list("enabled_rooms")
-        if enabled_rooms and live_id not in enabled_rooms:
-            return
+        # 1. 构造礼物条目
 
         # 2. 构造礼物条目
         item = _GiftItem(
@@ -187,7 +182,7 @@ class GiftThanksPlugin(Plugin):
             await self._enqueue(event, item)
         else:
             message = self._build_message(
-                cfg, event.user.name, live_id, event.user.id, [item]
+                cfg, event.user.name, event.user.id, [item]
             )
             await event.livestream.send_message(message)
 
@@ -202,11 +197,6 @@ class GiftThanksPlugin(Plugin):
         if cfg is None:
             return
 
-        # 房间过滤
-        live_id = event.livestream.live_id
-        enabled_rooms: list = cfg.get_int_list("enabled_rooms")
-        if enabled_rooms and live_id not in enabled_rooms:
-            return
 
         # 指令匹配：白榜 [页] / 黑榜 [页] / 黑白榜 [页]
         board_type = self._match_board_command(cfg, event.message.strip())
@@ -218,7 +208,7 @@ class GiftThanksPlugin(Plugin):
             return
 
         page = self._parse_page(cfg, event.message.strip())
-        message = self._build_board(cfg, event.user.name, live_id, board_type, page)
+        message = self._build_board(cfg, event.user.name, board_type, page)
         await event.livestream.send_message(message)
 
     # ------------------------------------------------------------------ #
@@ -228,14 +218,13 @@ class GiftThanksPlugin(Plugin):
     async def _enqueue(self, event: LiveGiftEvent, item: _GiftItem) -> None:
         """将礼物加入对应用户的聚合批次，重置延迟计时器。
 
-        批次按 (直播间, 用户) 隔离——同一用户在不同直播间的
-        送礼不会互相合并。
+        批次按用户隔离。
         """
         cfg = self._config
         if cfg is None:
             return
 
-        key = (event.livestream.live_id, event.user.id)
+        key = event.user.id
         batch = self._batches[key]
         batch.gifts.append(item)
         batch.user_name = event.user.name
@@ -250,10 +239,10 @@ class GiftThanksPlugin(Plugin):
         delay = cfg.get_float("batch_delay", 3.0)
         batch.timer = asyncio.create_task(self._flush_after(key, delay))
 
-    async def _flush_after(self, key: tuple[int, int], delay: float) -> None:
+    async def _flush_after(self, key: int, delay: float) -> None:
         """等待延迟后清空指定批次的聚合礼物并发送消息。
 
-        :param key: (live_id, user_id) 批次键
+        :param key: user_id 批次键
         :param delay: 延迟秒数
         """
         try:
@@ -270,7 +259,7 @@ class GiftThanksPlugin(Plugin):
             return
 
         message = self._build_message(
-            cfg, batch.user_name, key[0], key[1], batch.gifts
+            cfg, batch.user_name, key, batch.gifts
         )
         await batch.livestream.send_message(message)
 
@@ -285,7 +274,7 @@ class GiftThanksPlugin(Plugin):
                 if cfg is None:
                     continue
                 message = self._build_message(
-                    cfg, batch.user_name, key[0], key[1], batch.gifts
+                    cfg, batch.user_name, key, batch.gifts
                 )
                 await batch.livestream.send_message(message)
 
@@ -297,7 +286,6 @@ class GiftThanksPlugin(Plugin):
         self,
         cfg: MissConfig,
         user_name: str,
-        live_id: int,
         user_id: int,
         items: list[_GiftItem],
     ) -> str:
@@ -307,11 +295,10 @@ class GiftThanksPlugin(Plugin):
         同名多个礼物：合并数量后输出一行
         不同名礼物：每类一行
 
-        幸运值按 (直播间, 用户) 独立累计。
+        幸运值按用户独立累计。
 
         :param cfg: 插件配置
         :param user_name: 赠送者用户名
-        :param live_id: 直播间 ID（幸运值按直播间隔离）
         :param user_id: 赠送者用户 ID
         :param items: 待输出的礼物条目列表
         :return: 完整的感谢消息文本
@@ -372,8 +359,8 @@ class GiftThanksPlugin(Plugin):
         if lucky_original > 0:
             round_percent = lucky_actual / lucky_original * 100
 
-            # 更新该用户在该直播间的独立累计幸运值
-            user_stats = self._get_user_stats(live_id, user_id, user_name)
+            # 更新该用户的累计幸运值
+            user_stats = self._get_user_stats(user_id, user_name)
             user_stats["actual"] = int(user_stats["actual"]) + lucky_actual
             user_stats["original"] = int(user_stats["original"]) + lucky_original
             user_stats["name"] = user_name
@@ -438,7 +425,6 @@ class GiftThanksPlugin(Plugin):
         self,
         cfg: MissConfig,
         user_name: str,
-        live_id: int,
         board_type: str,
         page: int,
     ) -> str:
@@ -446,21 +432,20 @@ class GiftThanksPlugin(Plugin):
 
         :param cfg: 插件配置
         :param user_name: 查询者用户名（用于空榜提示）
-        :param live_id: 直播间 ID（榜单按直播间隔离）
         :param board_type: "white" / "black" / "both"
         :param page: 页码（从 1 开始）
         :return: 榜单消息文本
         """
         if board_type == "black":
-            return self._build_black_board(cfg, user_name, live_id, page)
+            return self._build_black_board(cfg, user_name, page)
         if board_type == "both":
-            return self._build_both_board(cfg, user_name, live_id, page)
-        return self._build_white_board(cfg, user_name, live_id, page)
+            return self._build_both_board(cfg, user_name, page)
+        return self._build_white_board(cfg, user_name, page)
 
     def _collect_board_entries(
-        self, cfg: MissConfig, live_id: int, board_type: str
+        self, cfg: MissConfig, board_type: str
     ) -> list[tuple[float, str, int]]:
-        """收集并排序榜单条目（按直播间隔离，幸运值从高到低）。
+        """收集并排序榜单条目（幸运值从高到低）。
 
         白榜：仅幸运值 ≥ 阈值；
         黑榜：仅幸运值 < 阈值（阈值为 0 时不筛选）；
@@ -469,7 +454,7 @@ class GiftThanksPlugin(Plugin):
         :return: [(幸运值, 用户名, user_id), ...] 已排序（降序）
         """
         threshold = cfg.get_float("board_threshold", 100.0)
-        room_stats = self._lucky_stats.get(live_id, {})
+        room_stats = self._lucky_stats
         entries = [
             (
                 _percent(int(s["actual"]), int(s["original"])),
@@ -505,11 +490,10 @@ class GiftThanksPlugin(Plugin):
         self,
         cfg: MissConfig,
         user_name: str,
-        live_id: int,
         page: int,
     ) -> str:
         """构建白榜消息（小福星样式，幸运值 ≥ 阈值，从高到低）。"""
-        entries = self._collect_board_entries(cfg, live_id, "white")
+        entries = self._collect_board_entries(cfg, "white")
         page_entries, page, total_pages = self._paginate(cfg, entries, page)
 
         lines: list[str] = []
@@ -557,11 +541,10 @@ class GiftThanksPlugin(Plugin):
         self,
         cfg: MissConfig,
         user_name: str,
-        live_id: int,
         page: int,
     ) -> str:
         """构建黑白榜消息（福星+煤球混合，从高到低）。"""
-        entries = self._collect_board_entries(cfg, live_id, "both")
+        entries = self._collect_board_entries(cfg, "both")
         page_entries, page, total_pages = self._paginate(cfg, entries, page)
         threshold = cfg.get_float("board_threshold", 100.0)
 
@@ -610,11 +593,10 @@ class GiftThanksPlugin(Plugin):
         self,
         cfg: MissConfig,
         user_name: str,
-        live_id: int,
         page: int,
     ) -> str:
         """构建黑榜消息（小煤球样式，幸运值 < 阈值）。"""
-        entries = self._collect_board_entries(cfg, live_id, "black")
+        entries = self._collect_board_entries(cfg, "black")
         page_entries, page, total_pages = self._paginate(cfg, entries, page)
 
         lines: list[str] = []
@@ -716,18 +698,17 @@ class GiftThanksPlugin(Plugin):
         return cfg.get_str("default_gift_emoji", "🎁")
 
     # ------------------------------------------------------------------ #
-    # 持久化：幸运值累计（按直播间隔离）
+    # 持久化：幸运值累计（账户级）
     # ------------------------------------------------------------------ #
 
     def _get_user_stats(
-        self, live_id: int, user_id: int, user_name: str
+        self, user_id: int, user_name: str
     ) -> dict[str, int | str]:
-        """获取（或创建）某用户在指定直播间的幸运值统计。"""
-        room = self._lucky_stats.setdefault(live_id, {})
-        stats = room.get(user_id)
+        """获取（或创建）某用户的幸运值统计。"""
+        stats = self._lucky_stats.get(user_id)
         if not isinstance(stats, dict):
             stats = {"actual": 0, "original": 0, "name": user_name}
-            room[user_id] = stats
+            self._lucky_stats[user_id] = stats
         return stats
 
     def _lucky_stats_path(self) -> str:
@@ -735,70 +716,44 @@ class GiftThanksPlugin(Plugin):
         return os.path.join(self.data_dir, _LUCKY_STATS_FILE)
 
     def _load_lucky_stats(self) -> None:
-        """从数据目录加载各直播间的幸运值累计记录。
+        """从数据目录加载幸运值累计记录（账户级单层结构）。
 
-        旧格式（按用户全局累计）因无法归属直播间，加载时重置。
+        旧房间分区格式因多账户版本不再使用，加载时重置。
         """
         data = self.data.read_json(_LUCKY_STATS_FILE) if self.data else None
+        self._lucky_stats = {}
         if isinstance(data, dict):
-            # 兼容旧格式：{"total_actual": ...} 或 {user_id: {...}}（全局累计）→ 重置
-            if "total_actual" in data or "total_original" in data:
-                _log.info("[GiftThanks] 检测到旧格式幸运值数据，已重置")
-                self._lucky_stats = {}
-                return
-
             first_value = next(iter(data.values()), None)
+            # 新格式：{user_id: {"actual", "original", "name"}}
             if isinstance(first_value, dict) and (
                 "actual" in first_value or "original" in first_value
             ):
-                # 旧格式：{user_id: {"actual": ..., "original": ...}}，无法归属直播间
-                _log.info("[GiftThanks] 检测到旧格式（全局）幸运值数据，已重置")
-                self._lucky_stats = {}
-                return
-
-            # 新格式：{live_id: {user_id: {"actual", "original", "name"}}}
-            for live_id, room in data.items():
-                if not isinstance(room, dict):
-                    continue
-                try:
-                    lid = int(live_id)
-                except ValueError:
-                    continue
-                room_stats: dict[int, dict[str, int | str]] = {}
-                for uid, stats in room.items():
+                for uid, stats in data.items():
                     if not isinstance(stats, dict):
                         continue
                     try:
                         iuid = int(uid)
                     except ValueError:
                         continue
-                    room_stats[iuid] = {
+                    self._lucky_stats[iuid] = {
                         "actual": int(stats.get("actual", 0)),
                         "original": int(stats.get("original", 0)),
                         "name": str(stats.get("name", "")),
                     }
-                if room_stats:
-                    self._lucky_stats[lid] = room_stats
-        else:
-            self._lucky_stats = {}
         _log.debug(
-            "[GiftThanks] 幸运值统计已加载: {} 个直播间",
+            "[GiftThanks] 幸运值统计已加载: {} 个用户",
             len(self._lucky_stats),
         )
 
     def _save_lucky_stats(self) -> None:
-        """立即将各直播间的幸运值累计记录持久化到磁盘。"""
+        """立即将幸运值累计记录持久化到磁盘。"""
         if self.data is None:
             return
         try:
             self.data.write_json(
                 _LUCKY_STATS_FILE,
-                {
-                    str(live_id): {
-                        str(uid): dict(stats) for uid, stats in room.items()
-                    }
-                    for live_id, room in self._lucky_stats.items()
-                },
+                {str(uid): dict(stats) for uid, stats in self._lucky_stats.items()},
             )
         except OSError as e:
             _log.warning("[GiftThanks] 保存幸运值统计失败: {}", e)
+

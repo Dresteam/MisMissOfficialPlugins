@@ -41,10 +41,5 @@
         "type": "float",
         "default": 30.0,
         "description": "匿名用户欢迎冷却时间（秒），同一冷却期内连续进入的匿名用户只欢迎一次"
-    },
-    "enabled_rooms": {
-        "type": "array",
-        "default": [],
-        "description": "启用本插件的直播间 ID 列表（空列表表示所有直播间均启用）"
     }
 }

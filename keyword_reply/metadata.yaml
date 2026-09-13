@@ -1,0 +1,6 @@
+name: keyword_reply
+desc: 关键词回复插件——收到匹配关键词（包含/完整匹配/正则）的消息时自动回复指定内容
+author: MisMiss
+version: 1.0.0
+short_desc: 关键词回复（包含 / 完整匹配 / 正则）
+display_name: 关键词回复插件

@@ -1,9 +1,4 @@
 {
-    "enabled_rooms": {
-        "type": "array",
-        "default": [],
-        "description": "启用本插件的直播间 ID 列表（空=全部）"
-    },
     "header_format": {
         "type": "string",
         "default": "🙋♂️{user}提问了哦",

@@ -1,0 +1,53 @@
+{
+  "type": "table",
+  "api": "/api/plugin/keyword_reply/ui/list",
+  "columns": [
+    { "key": "keyword", "label": "关键词" },
+    {
+      "key": "match_label",
+      "label": "匹配方式",
+      "type": "badge",
+      "badge_colors": {
+        "包含": "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+        "完整匹配": "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+        "正则表达式": "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
+      }
+    },
+    { "key": "reply", "label": "回复内容" },
+    {
+      "key": "enabled",
+      "label": "启用",
+      "type": "switch",
+      "switch_url": "/api/plugin/keyword_reply/ui/toggle"
+    }
+  ],
+  "actions": [
+    {
+      "label": "+ 添加规则",
+      "method": "POST",
+      "url": "/api/plugin/keyword_reply/ui/add",
+      "toolbar_only": true,
+      "prompt_fields": [
+        { "key": "keyword", "label": "关键词", "placeholder": "触发关键词(正则模式填正则表达式)" },
+        {
+          "key": "match_type",
+          "label": "匹配方式",
+          "input_type": "select",
+          "options": [
+            { "label": "包含", "value": "contains" },
+            { "label": "完整匹配", "value": "exact" },
+            { "label": "正则表达式", "value": "regex" }
+          ]
+        },
+        { "key": "reply", "label": "回复内容", "placeholder": "收到关键词后发送的内容" }
+      ]
+    },
+    {
+      "label": "删除",
+      "method": "POST",
+      "url": "/api/plugin/keyword_reply/ui/delete",
+      "row_only": true,
+      "body_template": { "id": "{{row.id}}" }
+    }
+  ]
+}

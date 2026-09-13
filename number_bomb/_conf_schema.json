@@ -1,9 +1,4 @@
 {
-    "enabled_rooms": {
-        "type": "array",
-        "default": [],
-        "description": "启用本插件的直播间 ID 列表（空=全部）"
-    },
     "op_users": {
         "type": "array",
         "default": [],
@@ -31,12 +26,18 @@
     },
     "cmd_join": {
         "type": "array",
-        "default": ["加入", "+"],
+        "default": [
+            "加入",
+            "+"
+        ],
         "description": "加入游戏指令列表"
     },
     "cmd_quit": {
         "type": "array",
-        "default": ["退出", "-"],
+        "default": [
+            "退出",
+            "-"
+        ],
         "description": "退出游戏指令列表"
     },
     "cmd_start_game": {
@@ -56,102 +57,156 @@
     },
     "msg_ready": {
         "type": "string",
-        "default": "[数字炸弹] 已经准备完成啦，可以发送 [加入] 或者 [+] 加入游戏~",
+        "default": "[数字炸弹] 新的一局已就绪，发送 [加入] 或 [+] 即可参与，上局玩家可直接发送 [开始] 再战～",
         "description": "准备完成提示"
     },
     "msg_running": {
         "type": "string",
-        "default": "游戏正在进行中哦~",
+        "default": "游戏正在进行中哦，打完这局再来吧～",
         "description": "游戏进行中提示"
     },
     "msg_not_ready": {
         "type": "string",
-        "default": "还没有初始化游戏哦，请先发送 数字炸弹~",
+        "default": "还没有开局哦，先发送「数字炸弹」准备一下吧～",
         "description": "房间从未初始化游戏时的提示"
     },
     "msg_not_started": {
         "type": "string",
-        "default": "游戏未在进行中",
+        "default": "现在没有正在进行的对局哦",
         "description": "跳过/结束操作时游戏未在进行中的提示（Web 操作反馈）"
     },
     "msg_no_permission": {
         "type": "string",
-        "default": "没有权限使用该命令~",
+        "default": "这个指令只有主播和管理员才能用哦～",
         "description": "无权限提示"
     },
     "msg_invalid_range": {
         "type": "string",
-        "default": "请输入正确的范围~",
+        "default": "数字不太对哦，请输入正确的范围～",
         "description": "范围参数非法提示"
     },
     "msg_range_min": {
         "type": "string",
-        "default": "数字范围不可小于 {min} 哦~",
+        "default": "范围太小啦，至少要有 {min} 个数哦～",
         "description": "范围过小提示（{min}=最小允许值）"
     },
     "msg_already_in": {
         "type": "string",
-        "default": "已经在游戏中啦~",
+        "default": "你已经在游戏里啦～",
         "description": "重复加入提示"
     },
     "msg_join_ok": {
         "type": "string",
-        "default": "加入成功~",
+        "default": "加入成功！祝你好运哟～",
         "description": "加入成功提示"
     },
     "msg_quit_ok": {
         "type": "string",
-        "default": "退出成功~",
+        "default": "已退出游戏，下次再来玩呀～",
         "description": "退出成功提示"
     },
     "msg_not_in": {
         "type": "string",
-        "default": "未在游戏中哦~",
+        "default": "你还没有加入这局游戏哦～",
         "description": "未在游戏中提示"
     },
     "msg_not_enough": {
         "type": "string",
-        "default": "游戏人数不足~",
+        "default": "人太少啦，至少要有 2 位玩家才能开始哦～",
         "description": "人数不足提示"
     },
     "msg_start_header": {
         "type": "string",
-        "default": "游戏开始！顺序：",
+        "default": "💣 数字炸弹开局！本轮顺序：",
         "description": "开局顺序标题"
     },
     "msg_order_line": {
         "type": "string",
-        "default": "{rank} - {name}",
+        "default": "{rank}. {name}",
         "description": "顺序条目模板（{rank}=名次，{name}=用户名）"
     },
     "msg_notify": {
         "type": "string",
-        "default": "🎯 @{name} 请发送 [{lower}, {upper}] 的一个数~",
+        "default": "🎯 轮到 @{name} 啦，请发送 [{lower}, {upper}] 中的一个数～",
         "description": "当前玩家猜数提示（{name}/{lower}/{upper}）"
+    },
+    "msg_wrong_guess": {
+        "type": "string",
+        "default": "😮💨 @{name} 猜的 {guess} 不是炸弹，安全幸存～\n👉 轮到 @{next} 啦，当前范围：[{lower}, {upper}]",
+        "description": "猜错（安全幸存）轮转提示（{name}=猜错者，{guess}=猜的数字，{next}=下一位，{lower}/{upper}=范围）"
     },
     "msg_skip": {
         "type": "string",
-        "default": "⏭️ 已跳过 @{name}\n👉 轮到 @{next}，当前范围：[{lower}, {upper}]",
-        "description": "轮转提示（{name}=被跳过者，{next}=下一位，{lower}/{upper}=范围）"
+        "default": "⏭️ 已跳过 @{name}\n👉 轮到 @{next} 啦，当前范围：[{lower}, {upper}]",
+        "description": "管理员跳过提示（{name}=被跳过者，{next}=下一位，{lower}/{upper}=范围）"
+    },
+    "msg_remain_3": {
+        "type": "array",
+        "default": [
+            "🍿 事情开始变得有趣起来了……{a}、{b}、{c}，中奖率三分之一哦",
+            "😏 有意思起来了呢，{a}、{b}、{c} 挑一个吧，小心脚下～",
+            "🎪 气氛突然紧张：{a}、{b}、{c} 三选一，步步惊心！",
+            "☕ 好戏开场，三选一：{a}、{b}、{c}，愿好运与你同在"
+        ],
+        "description": "区间只剩 3 个数时的气氛文案池，随机取一条（{a}/{b}/{c}=候选数字）"
+    },
+    "msg_remain_2": {
+        "type": "array",
+        "default": [
+            "🎉 欢乐二选一！{a} 还是 {b}？一半是天堂，一半是炸弹～",
+            "⚖️ {a} 与 {b}，猜错了活着，猜对了……就没了。",
+            "🎲 二选一时刻：{a} 或 {b}，赌上你的运气吧！",
+            "😆 激动人心的二选一来啦：{a} 和 {b}，哪个才是炸弹呢？"
+        ],
+        "description": "区间只剩 2 个数时的气氛文案池，随机取一条（{a}/{b}=候选数字）"
+    },
+    "msg_remain_1": {
+        "type": "array",
+        "default": [
+            "😏 就剩 {a} 一个数了，下一个张口的人必踩雷，要不先写好遗言？",
+            "💀 只剩 {a} 了，炸弹稳稳地等在那里——轮到谁谁倒霉～",
+            "🙏 最后一个数是 {a}，兄弟，该你上路了……",
+            "🍵 只剩 {a} 啦，躲是躲不掉了，勇敢一点吧～"
+        ],
+        "description": "区间只剩 1 个数时的阴阳怪气文案池，随机取一条（{a}=候选数字）"
     },
     "msg_out_of_range": {
         "type": "string",
-        "default": "请发送位于 [{lower}, {upper}] 区间内的一个数~",
+        "default": "🥺 这个数不在范围里哦，请在 [{lower}, {upper}] 中重新选一个～",
         "description": "猜数越界提示（{lower}/{upper}）"
     },
     "msg_game_over": {
-        "type": "string",
-        "default": "🎉 游戏结束，@{name} 猜中了数字！",
-        "description": "游戏结束提示（{name}=猜中者）"
+        "type": "array",
+        "default": [
+            "💥 BOOM！@{name} 踩中了炸弹 {target}，当场出局～",
+            "💥 轰隆——@{name} 撞上了炸弹 {target}，光荣牺牲！",
+            "💥 BOOM！炸弹 {target} 被 @{name} 引爆了，其他玩家成功苟活～"
+        ],
+        "description": "踩中炸弹（出局）文案池，随机取一条（{name}=踩雷者，{target}=炸弹数字，{lower}/{upper}=爆炸时的范围）"
     },
     "msg_force_end": {
         "type": "string",
-        "default": "游戏已强制结束",
+        "default": "🛑 本局已被强制结束",
         "description": "强制结束提示（进行中时）"
     },
     "msg_force_stop": {
         "type": "string",
-        "default": "游戏已强制停止",
+        "default": "🛑 游戏已强制停止，玩家列表已清空",
         "description": "强制停止提示（准备阶段清空玩家并回到未初始化）"
+    },
+    "msg_start_rule": {
+        "type": "string",
+        "default": "（轮流猜数，踩中炸弹的人出局哦～）",
+        "description": "开局时的规则提示行（留空则不显示）"
+    },
+    "msg_scoreboard_header": {
+        "type": "string",
+        "default": "★--☁✨☁ 积分榜☁✨☁--★",
+        "description": "积分榜标题（{count}=上榜人数），仅在每局结束时输出"
+    },
+    "msg_scoreboard_item": {
+        "type": "string",
+        "default": "❥•{rank} @{name} {score}分",
+        "description": "积分榜条目模板（{rank}=名次，{name}=用户名，{score}=分数）"
     }
 }

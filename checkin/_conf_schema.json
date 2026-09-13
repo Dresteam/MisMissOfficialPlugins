@@ -9,11 +9,6 @@
         "default": ["打卡", "dd"],
         "description": "签到指令别名（精确匹配）"
     },
-    "enabled_rooms": {
-        "type": "array",
-        "default": [],
-        "description": "启用本插件的直播间 ID 列表（空=全部）"
-    },
     "header": {
         "type": "string",
         "default": "———⋆⁺₊⋆☾⋆⁺₊ ———",

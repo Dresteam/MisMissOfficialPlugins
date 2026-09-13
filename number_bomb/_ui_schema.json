@@ -31,7 +31,8 @@
         { "key": "range", "label": "范围" },
         { "key": "player_count", "label": "人数", "type": "number" },
         { "key": "players", "label": "玩家列表", "type": "text" },
-        { "key": "current_player", "label": "当前玩家" }
+        { "key": "current_player", "label": "当前玩家" },
+        { "key": "scores", "label": "计分榜", "type": "text" }
       ],
       "actions": [
         {

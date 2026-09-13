@@ -53,7 +53,6 @@ class WelcomePlugin(Plugin):
     功能：
     - 普通用户：从 ``welcome_phrases`` 中随机选取欢迎语
     - 首次到访：从 ``first_visit_phrases`` 中随机选取（为空则退回普通欢迎语）
-    - 直播间过滤：``enabled_rooms`` 限制启用的直播间（空 = 全部启用）
     - 拼音模式：可选的用户名拼音注音
     """
 
@@ -74,20 +73,18 @@ class WelcomePlugin(Plugin):
         phrases = config.get_list("welcome_phrases")
         first_phrases = config.get_list("first_visit_phrases")
         pinyin_on = config.get_bool("pinyin_enabled", True)
-        enabled = config.get_int_list("enabled_rooms")
 
         # 加载已访问用户记录
         self._load_seen_users()
 
         _log.info(
             "[WelcomePlugin] 就绪 (plugin_id={})  欢迎语={}条  首访语={}条  "
-            "拼音={}  已见用户={}人  限定房间={}",
+            "拼音={}  已见用户={}人",
             self.plugin_id,
             len(phrases),
             len(first_phrases),
             "开启" if pinyin_on else "关闭",
             len(self._seen_users),
-            enabled if enabled else "(全部)",
         )
 
     async def terminate(self) -> None:
@@ -109,10 +106,6 @@ class WelcomePlugin(Plugin):
             return
 
         # 1. 检查直播间是否在启用列表中
-        live_id = event.livestream.live_id
-        enabled_rooms: list = cfg.get_int_list("enabled_rooms")
-        if enabled_rooms and live_id not in enabled_rooms:
-            return
 
         user_id = event.user.id
 

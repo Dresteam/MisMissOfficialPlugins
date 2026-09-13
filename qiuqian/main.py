@@ -154,11 +154,6 @@ class QiuqianPlugin(Plugin):
         if cfg is None:
             return
 
-        # 房间过滤
-        live_id = event.livestream.live_id
-        enabled_rooms: list = cfg.get_int_list("enabled_rooms")
-        if enabled_rooms and live_id not in enabled_rooms:
-            return
 
         # 指令匹配（精确）
         cmd = cfg.get_str("cmd_qiuqian", "求签")

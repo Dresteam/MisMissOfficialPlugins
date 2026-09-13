@@ -34,7 +34,6 @@
 |--------|--------|------|
 | `cmd_zodiac` | `星座` | 指令名 |
 | `cmd_zodiac_aliases` | `["运势"]` | 指令别名 |
-| `enabled_rooms` | `[]` | 启用直播间 ID 列表（空=全部） |
 | `time_type` | `today` | 运势类型：today/week/month/year |
 | `fallback_local` | `true` | API 失败时回退本地生成 |
 | `show_todo` | `false` | 是否显示接口的宜/忌 |

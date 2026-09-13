@@ -34,10 +34,6 @@ class QuestionThanksPlugin(Plugin):
         if cfg is None:
             return
 
-        # 房间过滤
-        enabled_rooms: list = cfg.get_int_list("enabled_rooms")
-        if enabled_rooms and event.livestream.live_id not in enabled_rooms:
-            return
 
         question = event.question
         user_name = event.user.name
