@@ -1,6 +1,6 @@
 name: song_list
 desc: 歌单插件——发送「歌单」指令，输出配置好的歌单列表（带装饰边框）
 author: MisMiss
-version: 1.0.0
+version: 1.0.1
 short_desc: 歌单插件（指令输出配置歌单）
 display_name: 歌单插件

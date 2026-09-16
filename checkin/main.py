@@ -3,7 +3,8 @@
 发送 ``签到`` / ``打卡`` / ``dd`` 进行每日打卡，统计：
 累计 / 本月 / 本周 / 连续签到次数。
 
-数据按直播间隔离，持久化到插件数据目录。
+数据为**账户级单份**（多账户由插件实例隔离），持久化到插件数据目录。
+旧版本按直播间分区的数据在载入时自动扁平化合并，不丢签到记录。
 """
 
 from __future__ import annotations
@@ -22,14 +23,13 @@ _DATA_FILE = "checkin_data.json"
 
 
 class CheckinPlugin(Plugin):
-    """每日签到插件——按直播间隔离，统计签到数据。"""
+    """每日签到插件——账户级统计签到数据。"""
 
     def __init__(self, permissions: dict | None = None) -> None:
         super().__init__(permissions=permissions)
         self._config: MissConfig | None = None
-        # room_id -> {user_id(str) -> {"YYYY-MM-DD": count}}
-        self._checkins: dict[int, dict[str, dict[str, int]]] = {}
-        self._room_names: dict[int, str] = {}
+        # user_id(str) -> {"YYYY-MM-DD": count}
+        self._checkins: dict[str, dict[str, int]] = {}
 
     # ------------------------------------------------------------------ #
     # 生命周期
@@ -39,7 +39,7 @@ class CheckinPlugin(Plugin):
         self._config = config
         self._load_data()
         _log.info(
-            "[Checkin] 就绪 (plugin_id={})  直播间={}个",
+            "[Checkin] 就绪 (plugin_id={})  已记录 {} 位用户",
             self.plugin_id, len(self._checkins),
         )
 
@@ -56,8 +56,6 @@ class CheckinPlugin(Plugin):
         if cfg is None:
             return
 
-        live_id = event.livestream.live_id
-
         # 指令匹配（精确）
         cmd = cfg.get_str("cmd_checkin", "签到")
         aliases: list[str] = cfg.get_list("cmd_checkin_aliases")
@@ -65,16 +63,11 @@ class CheckinPlugin(Plugin):
         if text not in [cmd] + [a for a in aliases if a]:
             return
 
-        # 记录房间名
-        if live_id not in self._room_names:
-            self._room_names[live_id] = event.livestream.room_name or f"房间{live_id}"
-
         user_id = event.user.id
         user_name = event.user.name
         today = date.today()
 
-        room_data = self._checkins.setdefault(live_id, {})
-        user_records = room_data.setdefault(str(user_id), {})
+        user_records = self._checkins.setdefault(str(user_id), {})
         today_str = today.isoformat()
 
         stats = self._calc_stats(user_records, today)
@@ -87,7 +80,7 @@ class CheckinPlugin(Plugin):
             user_records[today_str] = user_records.get(today_str, 0) + 1
             stats = self._calc_stats(user_records, today)
             # 今日第 N 位（含自己）
-            rank = sum(1 for u, recs in room_data.items() if today_str in recs)
+            rank = sum(1 for recs in self._checkins.values() if today_str in recs)
             self._save_data()
             message = self._build_success_message(cfg, user_name, rank, stats)
 
@@ -209,43 +202,55 @@ class CheckinPlugin(Plugin):
     # ------------------------------------------------------------------ #
 
     def _load_data(self) -> None:
+        """载入签到数据，兼容旧版「按直播间分区」的结构。
+
+        - 新结构：``{user_id: {"YYYY-MM-DD": count}}``
+        - 旧结构：``{room_id: {user_id: {"YYYY-MM-DD": count}}}``
+
+        两者靠内层值的类型区分（旧结构内层仍是 dict）。旧结构会被扁平化合并
+        进账户级记录——不迁移的话，账户更换绑定直播间后旧房间的数据将再也读不到。
+        """
         data = self.data.read_json(_DATA_FILE) if self.data else None
         if not isinstance(data, dict):
             return
-        checkins = data.get("checkins", {})
-        if isinstance(checkins, dict):
-            for rid_str, users in checkins.items():
-                try:
-                    rid = int(rid_str)
-                except ValueError:
-                    continue
-                if isinstance(users, dict):
-                    self._checkins[rid] = {
-                        str(uid): {
-                            str(d): int(c) for d, c in recs.items()
-                        }
-                        for uid, recs in users.items()
-                        if isinstance(recs, dict)
-                    }
-        rooms = data.get("rooms", {})
-        if isinstance(rooms, dict):
-            for rid_str, name in rooms.items():
-                try:
-                    self._room_names[int(rid_str)] = str(name)
-                except ValueError:
-                    continue
+        checkins = data.get("checkins")
+        if not isinstance(checkins, dict):
+            return
+
+        for key, value in checkins.items():
+            if not isinstance(value, dict) or not value:
+                continue
+            if any(isinstance(v, dict) for v in value.values()):
+                # 旧的房间分区：{room_id: {user_id: {date: count}}}
+                for uid, recs in value.items():
+                    if isinstance(recs, dict):
+                        self._merge_records(str(uid), recs)
+            else:
+                # 新的账户级记录：{user_id: {date: count}}
+                self._merge_records(str(key), value)
+
+    def _merge_records(self, uid: str, recs: dict) -> None:
+        """把一份用户签到记录并入内存，同一日期取较大次数。
+
+        兼容旧数据时同一用户可能出现在多个房间分区里，取较大值以免丢打卡。
+        """
+        target = self._checkins.setdefault(uid, {})
+        for day, count in recs.items():
+            try:
+                n = int(count)
+            except (TypeError, ValueError):
+                continue
+            day_str = str(day)
+            if n > target.get(day_str, 0):
+                target[day_str] = n
 
     def _save_data(self) -> None:
         if self.data is None:
             return
         try:
             self.data.write_json(_DATA_FILE, {
-                "rooms": {str(rid): name for rid, name in self._room_names.items()},
                 "checkins": {
-                    str(rid): {
-                        uid: dict(recs) for uid, recs in users.items()
-                    }
-                    for rid, users in self._checkins.items()
+                    uid: dict(recs) for uid, recs in self._checkins.items()
                 },
             })
         except OSError as e:

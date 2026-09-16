@@ -3,9 +3,10 @@
 收到礼物时自动发送个性化感谢消息，支持：
 - 猫粮/猫罐头特殊 emoji 处理
 - 非猫粮类礼物额外显示礼物价值
-- 幸运礼物显示本轮幸运值% + 累计幸运值%（持久化记录，按直播间隔离）
-- 礼物聚合：同一用户在同一直播间延迟时间内的连续送礼合并为一条消息
+- 幸运礼物显示本轮幸运值% + 累计幸运值%（持久化记录，账户级累计）
+- 礼物聚合：同一用户在延迟时间内的连续送礼合并为一条消息
 - 白榜/黑榜/黑白榜指令：幸运值排行榜（可配置仅管理员可用）
+- 跨房礼物感谢（可选）：大厅中送给其他麦的礼物，可标注受赠主播
 
 消息格式示例::
 
@@ -40,7 +41,11 @@ from core.logging import get_logger
 from interfaces.plugin import Plugin
 from interfaces.plugin.miss_config import MissConfig
 from interfaces.event import event_handler
-from interfaces.event.livestream import LiveGiftEvent, LiveMessageEvent
+from interfaces.event.livestream import (
+    LiveGiftEvent,
+    LiveCrossGiftEvent,
+    LiveMessageEvent,
+)
 
 if TYPE_CHECKING:
     from interfaces.livestream.livestream import Livestream
@@ -76,11 +81,12 @@ class _GiftItem:
     price: int  # 单价
     is_lucky: bool = False
     lucky_original_price: int = 0  # 幸运礼物原价（非幸运时为 0）
+    target: str | None = None  # 跨房礼物的受赠主播昵称；本房礼物为 None
 
 
 @dataclass
 class _UserBatch:
-    """单个用户在单个直播间的待聚合礼物批次。"""
+    """单个用户的待聚合礼物批次。"""
 
     gifts: list[_GiftItem] = field(default_factory=list)
     user_name: str = ""
@@ -99,6 +105,7 @@ class GiftThanksPlugin(Plugin):
         - ``gift_emoji_map`` — 特定礼物 → emoji
         - ``board_cmd_white`` / ``board_cmd_black`` / ``board_cmd_both`` — 榜单指令
         - ``board_admin_only`` — 榜单是否仅管理员可用
+        - ``cross_gift_enabled`` / ``cross_gift_line`` — 跨房礼物感谢开关与标注行
     """
 
     def __init__(self, permissions: dict | None = None) -> None:
@@ -186,6 +193,38 @@ class GiftThanksPlugin(Plugin):
             )
             await event.livestream.send_message(message)
 
+    @event_handler
+    async def on_cross_gift(self, event: LiveCrossGiftEvent) -> None:
+        """收到跨房礼物（大厅中送给其他麦）→ 按开关决定是否感谢。
+
+        礼物送给了别的主播，故条目带上受赠主播，在消息末尾以
+        ``cross_gift_line`` 标注（留空则不输出该行）。
+        """
+        cfg = self._config
+        if cfg is None or not cfg.get_bool("cross_gift_enabled", False):
+            return
+
+        gift = event.gift
+        item = _GiftItem(
+            name=gift.name,
+            num=gift.num,
+            price=gift.price,
+            is_lucky=gift.is_lucky_gift,
+            lucky_original_price=(
+                gift.lucky_gift.price * gift.lucky_gift.num
+                if gift.is_lucky_gift and gift.lucky_gift is not None
+                else 0
+            ),
+            # 受赠主播未知时（平台未携带 room 字段）留空，不输出标注行
+            target=event.target_creator_name or None,
+        )
+
+        if cfg.get_bool("batch_enabled", True):
+            await self._enqueue(event, item)
+        else:
+            message = self._build_message(cfg, event.user.name, event.user.id, [item])
+            await event.livestream.send_message(message)
+
     # ------------------------------------------------------------------ #
     # 事件处理器：白榜/黑榜/黑白榜指令
     # ------------------------------------------------------------------ #
@@ -215,10 +254,12 @@ class GiftThanksPlugin(Plugin):
     # 聚合：入队 + 计时器
     # ------------------------------------------------------------------ #
 
-    async def _enqueue(self, event: LiveGiftEvent, item: _GiftItem) -> None:
+    async def _enqueue(
+        self, event: LiveGiftEvent | LiveCrossGiftEvent, item: _GiftItem
+    ) -> None:
         """将礼物加入对应用户的聚合批次，重置延迟计时器。
 
-        批次按用户隔离。
+        批次按用户隔离（本房与跨房礼物共用同一批次，靠 ``item.target`` 区分）。
         """
         cfg = self._config
         if cfg is None:
@@ -334,6 +375,16 @@ class GiftThanksPlugin(Plugin):
             lines.append(gift_line)
             if m.name not in cat_food_names:
                 has_non_cat_food = True
+
+        # 跨房礼物：标注受赠主播（同一批次可能送给多个主播，按出现顺序逐个输出）
+        cross_line_fmt = cfg.get_str("cross_gift_line", "┆　• 送给：{target}")
+        if cross_line_fmt:
+            targets: list[str] = []
+            for m in merged:
+                if m.target and m.target not in targets:
+                    targets.append(m.target)
+            for target in targets:
+                lines.append(cross_line_fmt.replace("{target}", target))
 
         # 底部装饰画
         footer = cfg.get_str("footer_art", "")
@@ -649,33 +700,36 @@ class GiftThanksPlugin(Plugin):
     def _merge_items(items: list[_GiftItem]) -> list[_GiftItem]:
         """合并同名礼物——数量累加，幸运值合并。
 
-        保留输入顺序。
+        保留输入顺序。合并键含受赠主播：同名的本房礼物与跨房礼物不能合并，
+        送给不同主播的同名礼物也各自成行，否则会丢标注。
 
         :param items: 原始礼物条目列表
         :return: 合并后的礼物条目列表
         """
-        merged: dict[str, _GiftItem] = {}
-        order: list[str] = []
+        merged: dict[tuple[str, str | None], _GiftItem] = {}
+        order: list[tuple[str, str | None]] = []
 
         for item in items:
-            if item.name in merged:
-                existing = merged[item.name]
+            key = (item.name, item.target)
+            if key in merged:
+                existing = merged[key]
                 existing.num += item.num
                 existing.price = item.price  # 单价取最新
                 if item.is_lucky:
                     existing.is_lucky = True
                     existing.lucky_original_price += item.lucky_original_price
             else:
-                merged[item.name] = _GiftItem(
+                merged[key] = _GiftItem(
                     name=item.name,
                     num=item.num,
                     price=item.price,
                     is_lucky=item.is_lucky,
                     lucky_original_price=item.lucky_original_price,
+                    target=item.target,
                 )
-                order.append(item.name)
+                order.append(key)
 
-        return [merged[name] for name in order]
+        return [merged[key] for key in order]
 
     # ------------------------------------------------------------------ #
     # 内部：emoji 解析

@@ -6,13 +6,13 @@
       "type": "stats",
       "api": "/api/plugin/number_bomb/ui/stats",
       "fields": [
-        { "key": "running", "label": "进行中", "subtitle": "直播间数" },
-        { "key": "ready", "label": "准备中", "subtitle": "直播间数" },
-        { "key": "players", "label": "参与玩家", "subtitle": "全部直播间" }
+        { "key": "running", "label": "进行中", "subtitle": "局" },
+        { "key": "ready", "label": "准备中", "subtitle": "局" },
+        { "key": "players", "label": "参与玩家", "subtitle": "人" }
       ]
     },
     {
-      "title": "直播间对局",
+      "title": "当前对局",
       "type": "table",
       "api": "/api/plugin/number_bomb/ui/rooms",
       "columns": [
@@ -81,7 +81,6 @@
         "url": "/api/plugin/number_bomb/ui/init"
       },
       "form_fields": [
-        { "key": "room_id", "label": "直播间ID", "type": "number", "required": true, "placeholder": "如 123456789" },
         { "key": "max_number", "label": "最大数字（可选）", "type": "number", "placeholder": "留空使用当前/默认值" }
       ]
     }

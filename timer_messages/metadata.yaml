@@ -1,6 +1,6 @@
 name: timer_messages
 desc: 定时消息插件——注册多条定时消息，由 Bot 轮转发送
 author: MisMiss
-version: 1.0.1
+version: 1.0.2
 short_desc: 定时消息插件（多条轮转发送）
 display_name: 定时消息插件

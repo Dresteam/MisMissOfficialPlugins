@@ -60,12 +60,22 @@
     "batch_enabled": {
         "type": "boolean",
         "default": true,
-        "description": "是否启用礼物聚合：同一用户在同一直播间延迟时间内连续送礼时合并为一条感谢消息"
+        "description": "是否启用礼物聚合：同一用户在延迟时间内连续送礼时合并为一条感谢消息"
     },
     "batch_delay": {
         "type": "float",
         "default": 3.0,
         "description": "礼物聚合延迟（秒）：在此时间内同一用户的新礼物会重置计时并合并"
+    },
+    "cross_gift_enabled": {
+        "type": "boolean",
+        "default": false,
+        "description": "是否感谢跨房礼物：开启后，大厅中观众送给其他麦（非本直播间）的礼物也会发送感谢消息"
+    },
+    "cross_gift_line": {
+        "type": "string",
+        "default": "┆　• 送给：{target}",
+        "description": "跨房礼物的受赠主播标注行（{target} 替换为受赠主播昵称；留空则不输出该行）"
     },
     "board_cmd_white": {
         "type": "string",

@@ -2,7 +2,7 @@
 
 新用户进入直播间时自动发送随机欢迎消息。
 支持拼音模式——在用户名上方附加拼音注音（基于 pypinyin 库）。
-支持首次到访专属欢迎语，以及按直播间过滤。
+支持首次到访专属欢迎语，以及匿名用户（user_id 为 0）的独立欢迎语与冷却。
 
 消息格式（拼音模式开启时）::
     欢迎 @睡觉为大 来到直播间～
@@ -31,20 +31,35 @@ _SEEN_USERS_FILE = "seen_users.json"
 
 
 def to_pinyin(text: str) -> str:
-    """将中文字符串转为空格分隔的拼音（带声调）。
+    """将中文字符串转为空格分隔的拼音（带声调），非中文部分整体保留。
 
-    :param text: 中文字符串
-    :return: 拼音字符串，如 ``"shuì jué wéi dà"``
+    中文**逐字**注音——用户名多为非词典词组合，逐字比按词更准确；
+    连续的非中文字符（英文/数字/符号）合并为**一段**，不再逐字符拆开：
+    否则 ``TexasTheDrest`` 会变成 ``T e x a s T h e D r e s t``。
+
+    :param text: 用户名
+    :return: 拼音字符串，如 ``"shuì jué wéi dà"`` / ``"TexasTheDrest"``
     """
-    # 逐字转拼音（用户名多为非词典词组合，逐字更准确）
-    result: list[str] = []
+    tokens: list[str] = []
+    pending: list[str] = []  # 累积中的非中文段
+
+    def flush() -> None:
+        if pending:
+            run = "".join(pending).strip()
+            if run:
+                tokens.append(run)
+            pending.clear()
+
     for ch in text:
         if "一" <= ch <= "鿿":
+            flush()
             py = pinyin(ch, style=Style.TONE, heteronym=False)
-            result.append(py[0][0] if py else ch)
+            tokens.append(py[0][0] if py else ch)
         else:
-            result.append(ch)
-    return " ".join(result)
+            pending.append(ch)
+    flush()
+
+    return " ".join(tokens)
 
 
 class WelcomePlugin(Plugin):
@@ -105,11 +120,9 @@ class WelcomePlugin(Plugin):
         if cfg is None:
             return
 
-        # 1. 检查直播间是否在启用列表中
-
         user_id = event.user.id
 
-        # 2. 跳过机器人自身
+        # 1. 跳过机器人自身
         bot = event.livestream.bot
         if user_id == bot.id:
             return
