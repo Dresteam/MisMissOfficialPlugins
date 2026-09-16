@@ -1,10 +1,12 @@
 {
     "cmd_add": {
+        "group": "常用",
         "type": "string",
         "default": "点播",
         "description": "添加点播的指令名"
     },
     "cmd_add_aliases": {
+        "group": "常用",
         "type": "array",
         "default": [
             "点歌"
@@ -12,11 +14,13 @@
         "description": "添加点播指令的别名"
     },
     "cmd_list": {
+        "group": "常用",
         "type": "string",
         "default": "点播单",
         "description": "查看点播单的指令名"
     },
     "cmd_list_aliases": {
+        "group": "常用",
         "type": "array",
         "default": [
             "点歌单"
@@ -24,76 +28,91 @@
         "description": "查看点播单指令的别名"
     },
     "cmd_complete": {
+        "group": "常用",
         "type": "string",
         "default": "完成",
         "description": "标记完成的指令名（管理员）"
     },
     "cmd_delete": {
+        "group": "常用",
         "type": "string",
         "default": "删除",
         "description": "删除点播的指令名（管理员）"
     },
     "cmd_clear": {
+        "group": "常用",
         "type": "string",
         "default": "清空",
         "description": "清空点播单的指令名（管理员，精确匹配）"
     },
     "cmd_playing": {
+        "group": "常用",
         "type": "string",
         "default": "播放",
         "description": "标记播放中的指令名（管理员）"
     },
     "cmd_working": {
+        "group": "常用",
         "type": "string",
         "default": "操作",
         "description": "标记操作中的指令名（管理员）"
     },
     "page_size": {
+        "group": "常用",
         "type": "int",
         "default": 8,
         "description": "点播单每页显示条目数"
     },
     "timer_enabled": {
+        "group": "常用",
         "type": "boolean",
         "default": true,
         "description": "是否启用定时宣传消息"
     },
     "timer_message": {
+        "group": "常用",
         "type": "string",
         "default": "本直播间已开启点播，发送「点播 歌名」来点歌吧～ 🎵",
         "description": "定时提示消息的文案（{cmd_add} 会被替换为实际指令名），注册到账户直播间队列"
     },
     "playlist_header": {
+        "group": "高级",
         "type": "string",
         "default": "★--☁✨☁ 本场点播单☁✨☁--★",
         "description": "点播单头部装饰"
     },
     "playlist_footer": {
+        "group": "高级",
         "type": "string",
         "default": "══════ ᶫᵒᵛᵉᵧₒᵤ ══════",
         "description": "点播单底部装饰"
     },
     "playlist_item_prefix": {
+        "group": "高级",
         "type": "string",
         "default": "❥•",
         "description": "点播单每行前缀"
     },
     "playlist_page_format": {
+        "group": "高级",
         "type": "string",
         "default": "❀ ✣({page}/{total}页)",
         "description": "页码行格式"
     },
     "playlist_item_format": {
+        "group": "高级",
         "type": "string",
         "default": "{prefix}{idx} 『{song}』 @{user}{icon}",
         "description": "点播单条目格式"
     },
     "playlist_empty_slot": {
+        "group": "高级",
         "type": "string",
         "default": "{prefix}{idx}",
         "description": "点播单空槽格式"
     },
     "status_icons": {
+        "group": "高级",
         "type": "object",
         "default": {
             "pending": " ⏳",
@@ -104,66 +123,79 @@
         "description": "各状态对应的图标"
     },
     "msg_add_success": {
+        "group": "文案",
         "type": "string",
         "default": "✅ 已收录点播：『{song}』  @{user}",
         "description": "点播成功消息（{song}/{user} 会替换）"
     },
     "msg_delete_success": {
+        "group": "文案",
         "type": "string",
         "default": "🗑️ #{n}『{song}』已删除",
         "description": "删除成功消息"
     },
     "msg_clear_success": {
+        "group": "文案",
         "type": "string",
         "default": "🗑️ 点播单已清空（{count} 条）",
         "description": "清空点播单成功消息（{count}=清空条数）"
     },
     "msg_clear_empty": {
+        "group": "文案",
         "type": "string",
         "default": "📭 点播单已经是空的啦~",
         "description": "点播单为空时的清空提示（会加 @用户名 前缀）"
     },
     "msg_invalid_index": {
+        "group": "文案",
         "type": "string",
         "default": "❌ 无效序号（共 {count} 项）",
         "description": "无效序号提示"
     },
     "msg_player_border": {
+        "group": "高级",
         "type": "string",
         "default": "•────⋆⁺₊⋆☾⋆⁺₊⋆────•",
         "description": "播放器状态消息边框"
     },
     "msg_player_progress": {
+        "group": "高级",
         "type": "string",
         "default": " ●━━━━━────── 5:20",
         "description": "播放器进度条"
     },
     "msg_player_controls": {
+        "group": "高级",
         "type": "string",
         "default": "⇆        ᐊ    ■    ᐅ        ♥︎",
         "description": "播放器控制按钮"
     },
     "msg_playing_emoji": {
+        "group": "高级",
         "type": "string",
         "default": "·  .⋆ 🎵✨ 正在播放 ✨🎵·  .⋆",
         "description": "播放中 emoji 行"
     },
     "msg_working_emoji": {
+        "group": "高级",
         "type": "string",
         "default": "·  .⋆ 🪐✨ 正在操作 ✨🪐·  .⋆",
         "description": "操作中 emoji 行"
     },
     "msg_done_text": {
+        "group": "文案",
         "type": "string",
         "default": "💗主播大大已经完成🎤『{song}』了喔",
         "description": "已完成消息"
     },
     "msg_web_add_success": {
+        "group": "文案",
         "type": "string",
         "default": "✅ [Web] 已收录点播：『{song}』",
         "description": "Web端点播成功消息"
     },
     "msg_web_delete_success": {
+        "group": "文案",
         "type": "string",
         "default": "🗑️ [Web] 点播 #{n}『{song}』已删除",
         "description": "Web端删除成功消息"

@@ -1,6 +1,6 @@
 name: number_bomb
 desc: 数字炸弹小游戏——授权用户发起 数字炸弹，观众 加入/退出，开始后轮流猜数缩区间，猜中炸弹者输
 author: MisMiss
-version: 1.0.7
+version: 1.0.8
 short_desc: 数字炸弹小游戏（账户内单局）
 display_name: 数字炸弹插件

@@ -1,10 +1,12 @@
 {
     "cmd_qiuqian": {
+        "group": "常用",
         "type": "string",
         "default": "求签",
         "description": "求签指令名"
     },
     "cmd_qiuqian_aliases": {
+        "group": "常用",
         "type": "array",
         "default": [
             "抽签"
@@ -12,41 +14,49 @@
         "description": "求签指令别名（精确匹配）"
     },
     "live_fetch": {
+        "group": "常用",
         "type": "boolean",
         "default": true,
         "description": "抽中未缓存的签号时实时抓取解签（关闭则仅从本地签文抽取）"
     },
     "fetch_fail_text": {
+        "group": "文案",
         "type": "string",
         "default": "求签失败啦，稍后再来试试吧~",
         "description": "实时抓取失败且无任何本地签文时的提示"
     },
     "result_line": {
+        "group": "文案",
         "type": "string",
         "default": "求签结果：您抽到的是第{n}签【{f}】",
         "description": "结果行模板（{n}=中文签号，{f}=吉凶）"
     },
     "poem_line": {
+        "group": "文案",
         "type": "string",
         "default": "签诗：{p}",
         "description": "签诗行模板（{p}=签诗）"
     },
     "intpn_line": {
+        "group": "文案",
         "type": "string",
         "default": "解签：{i}",
         "description": "解签行模板（{i}=解签一）"
     },
     "show_intpn_2": {
+        "group": "常用",
         "type": "boolean",
         "default": false,
         "description": "是否追加显示解签二"
     },
     "intpn_2_line": {
+        "group": "文案",
         "type": "string",
         "default": "解签二：{i}",
         "description": "解签二行模板（{i}=解签二）"
     },
     "separator": {
+        "group": "高级",
         "type": "string",
         "default": "♱⋰ ⋱✮⋰ ⋱♱⋰ ⋱✮⋰ ⋱♱⋰ ⋱✮⋰",
         "description": "消息底部装饰线"

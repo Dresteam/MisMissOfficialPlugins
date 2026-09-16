@@ -1,60 +1,75 @@
 {
     "cmd_checkin": {
+        "group": "常用",
         "type": "string",
         "default": "签到",
         "description": "签到指令名"
     },
     "cmd_checkin_aliases": {
+        "group": "常用",
         "type": "array",
-        "default": ["打卡", "dd"],
+        "default": [
+            "打卡",
+            "dd"
+        ],
         "description": "签到指令别名（精确匹配）"
     },
     "header": {
+        "group": "高级",
         "type": "string",
         "default": "———⋆⁺₊⋆☾⋆⁺₊ ———",
         "description": "消息顶部装饰线"
     },
     "border": {
+        "group": "高级",
         "type": "string",
         "default": "•────⋆⁺₊⋆☾⋆⁺₊⋆────•",
         "description": "消息中部/底部装饰线"
     },
     "success_emoji": {
+        "group": "高级",
         "type": "string",
         "default": "· .⋆ 🪐✨打卡成功咯✨🪐⋆. ·",
         "description": "首次打卡 emoji 行"
     },
     "success_title": {
+        "group": "文案",
         "type": "string",
         "default": "\"你是今天第{n}位签到的宝贝哦~",
         "description": "首次打卡标题（{n}=今日第几位）"
     },
     "repeat_text": {
+        "group": "常用",
         "type": "string",
         "default": "小可爱今天已经打过卡了哦",
         "description": "重复打卡提示文案"
     },
     "stats_emoji": {
+        "group": "高级",
         "type": "string",
         "default": "· .⋆ 🪐✨打卡统计✨🪐⋆. ·",
         "description": "统计区块 emoji 行"
     },
     "stat_total": {
+        "group": "文案",
         "type": "string",
         "default": "┊ 🎐 累计签到次数：{v}",
         "description": "累计签到行（{v}=数值）"
     },
     "stat_month": {
+        "group": "文案",
         "type": "string",
         "default": "┊ 🎐 本月签到次数：{v}",
         "description": "本月签到行"
     },
     "stat_week": {
+        "group": "文案",
         "type": "string",
         "default": "┊ 🎐 本周签到次数：{v}",
         "description": "本周签到行"
     },
     "stat_streak": {
+        "group": "文案",
         "type": "string",
         "default": "┊ 🎐 连续签到次数：{v}",
         "description": "连续签到行"
