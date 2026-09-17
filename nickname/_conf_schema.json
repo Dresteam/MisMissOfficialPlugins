@@ -1,0 +1,56 @@
+{
+    "block_command_message": {
+        "group": "常用",
+        "type": "boolean",
+        "default": true,
+        "description": "收到昵称指令时阻止该弹幕继续传给其他插件（关键词回复等不会把它当普通弹幕处理）"
+    },
+    "max_length": {
+        "group": "常用",
+        "type": "int",
+        "default": 12,
+        "description": "专属昵称最大字数"
+    },
+    "cmd_show": {
+        "group": "高级",
+        "type": "string",
+        "default": "昵称",
+        "description": "查看/设置指令名（「昵称」查看，「昵称 xxx」设置，均不带方括号）"
+    },
+    "cmd_reset": {
+        "group": "高级",
+        "type": "string",
+        "default": "重置昵称",
+        "description": "重置指令名（[重置昵称] 取消专属昵称）"
+    },
+    "msg_set": {
+        "group": "文案",
+        "type": "string",
+        "default": "@{user} 昵称已设置为「{nick}」",
+        "description": "设置成功回执（{user}=发送者，{nick}=新昵称）"
+    },
+    "msg_show": {
+        "group": "文案",
+        "type": "string",
+        "default": "@{user} 您的昵称是「{nick}」",
+        "description": "查看回执（{user}=发送者，{nick}=当前昵称）"
+    },
+    "msg_reset": {
+        "group": "文案",
+        "type": "string",
+        "default": "@{user} 昵称已重置",
+        "description": "重置成功回执（{user}=发送者）"
+    },
+    "msg_not_set": {
+        "group": "文案",
+        "type": "string",
+        "default": "@{user} 暂未设置昵称专属喔",
+        "description": "尚未设置时的回执（查看与重置共用）"
+    },
+    "msg_too_long": {
+        "group": "文案",
+        "type": "string",
+        "default": "@{user} 昵称最多 {max} 个字",
+        "description": "超长回执（{user}=发送者，{max}=最大字数）"
+    }
+}

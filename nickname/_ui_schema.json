@@ -1,0 +1,17 @@
+{
+  "type": "table",
+  "api": "/api/plugin/nickname/ui/list",
+  "columns": [
+    { "key": "user_id", "label": "用户 ID" },
+    { "key": "nickname", "label": "专属昵称" }
+  ],
+  "actions": [
+    {
+      "label": "删除",
+      "method": "POST",
+      "url": "/api/plugin/nickname/ui/delete",
+      "row_only": true,
+      "body_template": { "user_id": "{{row.user_id}}" }
+    }
+  ]
+}

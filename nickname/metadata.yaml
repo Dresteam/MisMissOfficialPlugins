@@ -1,0 +1,6 @@
+name: nickname
+desc: 专属昵称插件——观众发送 [昵称 xxx] 设置专属名，之后所有涉及该用户的事件中其用户名都会被替换为专属昵称
+author: MisMiss
+version: 1.0.0
+short_desc: 专属昵称（[昵称 xxx] 设置 / [重置昵称] 重置）
+display_name: 专属昵称插件
