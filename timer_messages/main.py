@@ -40,8 +40,11 @@ class TimerMessagesPlugin(Plugin):
         self._config = config
 
     async def on_livestream_bound(self, livestream) -> None:
-        """账户绑定直播间 → 注册全部定时消息。"""
-        if self._config is None or not self._config.get_bool("enabled", True):
+        """账户绑定直播间 → 注册全部定时消息。
+
+        启停由服务器侧的插件启用/停用决定，本插件不再自带开关。
+        """
+        if self._config is None:
             return
         self._register_all()
 
