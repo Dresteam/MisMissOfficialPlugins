@@ -57,8 +57,10 @@ _LUCKY_STATS_FILE = "lucky_stats.json"
 # 历史默认值 —— 供 _migrate_config 判定「用户是否自定义过」。
 # schema 默认值改动不会覆盖已保存的账户配置，故把恰好等于旧默认值者视为
 # 从未自定义，在加载时迁移为新默认值；用户改过的值一律不动。
-_LEGACY_CROSS_GIFT_LINE = "┆　• 送给：{target}"
-_DEFAULT_CROSS_GIFT_LINE = "送给：{target}"
+#   1.3.2 起：受赠主播标注移到装饰框外 → "送给：{target}"
+#   1.3.4 起：标注并入礼物行末尾     → " → {targets}"（顿号分隔，可折叠）
+_LEGACY_CROSS_GIFT_LINES = ("┆　• 送给：{target}", "送给：{target}")
+_DEFAULT_CROSS_GIFT_LINE = " → {targets}"
 
 
 def _fmt_percent(value: float) -> str:
@@ -136,8 +138,9 @@ class GiftThanksPlugin(Plugin):
 
         - ``cross_gift_enabled``：旧默认 ``false`` → 新默认 ``true``
           （跨房礼物感谢改为默认开启）
-        - ``cross_gift_line``：旧默认 ``"┆　• 送给：{target}"`` → 新默认
-          ``"送给：{target}"``（标注移到装饰框外，不再需要行首装饰符号）
+        - ``cross_gift_line``：旧默认（``"┆　• 送给：{target}"`` 或
+          ``"送给：{target}"``）→ 新默认 ``" → {targets}"``
+          （标注并入礼物行末尾，顿号分隔，人多时折叠）
 
         只迁移与旧默认值**完全相等**的项——用户自定义过的值保持不变。
         """
@@ -146,7 +149,7 @@ class GiftThanksPlugin(Plugin):
         if data.get("cross_gift_enabled") is False:
             data["cross_gift_enabled"] = True
             migrated.append("cross_gift_enabled")
-        if data.get("cross_gift_line") == _LEGACY_CROSS_GIFT_LINE:
+        if data.get("cross_gift_line") in _LEGACY_CROSS_GIFT_LINES:
             data["cross_gift_line"] = _DEFAULT_CROSS_GIFT_LINE
             migrated.append("cross_gift_line")
         if migrated:
@@ -393,22 +396,42 @@ class GiftThanksPlugin(Plugin):
         if header:
             lines.append(header)
 
-        # 礼物行
+        # 礼物行：按礼物名聚合，跨房礼物的受赠主播并入行内
+        # （合并键含受赠主播，故同名礼物送给不同主播会各成一条，需在此再聚合）
         gift_line_fmt = cfg.get_str(
             "gift_line_format", "┆　• {gift_name}：{gift_emoji}*{gift_num}个"
         )
+        cross_line_fmt = cfg.get_str("cross_gift_line", " → {targets}")
+        max_targets = cfg.get_int("cross_gift_max_targets", 5)
         cat_food_names: list[str] = cfg.get_list("cat_food_names")
         has_non_cat_food = False
 
+        # (礼物名, 是否跨房) → 下标。本房与跨房刻意不合并：
+        # 合并会把本房礼物也标成「送给某人」
+        rows: list[list] = []  # [[礼物名, 总数量, [受赠主播...]], ...]
+        row_index: dict[tuple[str, bool], int] = {}
         for m in merged:
-            emoji = self._resolve_emoji(cfg, m.name)
+            key = (m.name, m.target is not None)
+            if key in row_index:
+                row = rows[row_index[key]]
+                row[1] += m.num
+                if m.target:
+                    row[2].append(m.target)
+            else:
+                row_index[key] = len(rows)
+                rows.append([m.name, m.num, [m.target] if m.target else []])
+
+        for name, num, targets in rows:
+            emoji = self._resolve_emoji(cfg, name)
             gift_line = (
-                gift_line_fmt.replace("{gift_name}", m.name)
+                gift_line_fmt.replace("{gift_name}", name)
                 .replace("{gift_emoji}", emoji)
-                .replace("{gift_num}", str(m.num))
+                .replace("{gift_num}", str(num))
             )
+            if targets and cross_line_fmt:
+                gift_line += self._format_targets(cross_line_fmt, targets, max_targets)
             lines.append(gift_line)
-            if m.name not in cat_food_names:
+            if name not in cat_food_names:
                 has_non_cat_food = True
 
         # 底部装饰画
@@ -416,17 +439,7 @@ class GiftThanksPlugin(Plugin):
         if footer:
             lines.append(footer)
 
-        # frame 外：受赠主播 → 价值 → 本轮幸运值 → 累计幸运值
-        # 跨房礼物：标注受赠主播（同一批次可能送给多个主播，按出现顺序逐个输出）
-        cross_line_fmt = cfg.get_str("cross_gift_line", "送给：{target}")
-        if cross_line_fmt:
-            targets: list[str] = []
-            for m in merged:
-                if m.target and m.target not in targets:
-                    targets.append(m.target)
-            for target in targets:
-                lines.append(cross_line_fmt.replace("{target}", target))
-
+        # frame 外：价值 → 本轮幸运值 → 累计幸运值
         if has_non_cat_food:
             total_value = sum(m.price * m.num for m in merged if m.name not in cat_food_names)
             if total_value > 0:  # 总价值为 0 时不输出价值行
@@ -730,6 +743,25 @@ class GiftThanksPlugin(Plugin):
     # ------------------------------------------------------------------ #
     # 内部：合并同名礼物
     # ------------------------------------------------------------------ #
+
+    @staticmethod
+    def _format_targets(fmt: str, targets: list[str], max_targets: int) -> str:
+        """把受赠主播列表渲染为礼物行的后缀。
+
+        超过 ``max_targets`` 人时折叠，只列前几个并以「等 N 人」收尾——
+        极端刷礼物场景下避免整条消息被受赠人列表淹没。
+
+        :param fmt: 后缀模板，``{targets}`` 为占位符
+        :param targets: 受赠主播昵称（按出现顺序，已去重）
+        :param max_targets: 折叠阈值，``<= 0`` 表示不折叠
+        :return: 渲染好的后缀
+        """
+        if max_targets > 0 and len(targets) > max_targets:
+            shown = "、".join(targets[:max_targets]) + f" 等 {len(targets)} 人"
+        else:
+            shown = "、".join(targets)
+        # {targets} 为当前主占位符；{target} 保留以兼容自定义过的旧文案
+        return fmt.replace("{targets}", shown).replace("{target}", shown)
 
     @staticmethod
     def _merge_items(items: list[_GiftItem]) -> list[_GiftItem]:

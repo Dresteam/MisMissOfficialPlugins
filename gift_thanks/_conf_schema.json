@@ -89,8 +89,14 @@
     "cross_gift_line": {
         "group": "文案",
         "type": "string",
-        "default": "送给：{target}",
-        "description": "跨房礼物的受赠主播标注行，输出在装饰框外 footer 之后（{target} 替换为受赠主播昵称；留空则不输出该行）"
+        "default": " → {targets}",
+        "description": "跨房礼物的受赠主播后缀，接在礼物行末尾（{targets} 为顿号分隔的昵称列表；留空则不输出）"
+    },
+    "cross_gift_max_targets": {
+        "group": "高级",
+        "type": "int",
+        "default": 5,
+        "description": "受赠主播超过 N 人时折叠为「等 N 人」，0 表示不折叠"
     },
     "board_cmd_white": {
         "group": "常用",
