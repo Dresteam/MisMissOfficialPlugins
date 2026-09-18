@@ -33,6 +33,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+import re
 from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
@@ -61,6 +62,10 @@ _LUCKY_STATS_FILE = "lucky_stats.json"
 #   1.3.4 起：标注并入礼物行末尾     → " → {targets}"（顿号分隔，可折叠）
 _LEGACY_CROSS_GIFT_LINES = ("┆　• 送给：{target}", "送给：{target}")
 _DEFAULT_CROSS_GIFT_LINE = " → {targets}"
+
+# 行首装饰性前缀 —— 自定义模板多写成「┆　• 送给：{target}」这种独立成行的样式，
+# 转为行内后缀时这些前缀不再有意义，迁移时剥掉
+_LEADING_DECOR_RE = re.compile(r"^[\s　┆│|•·]+")
 
 
 def _fmt_percent(value: float) -> str:
@@ -149,9 +154,19 @@ class GiftThanksPlugin(Plugin):
         if data.get("cross_gift_enabled") is False:
             data["cross_gift_enabled"] = True
             migrated.append("cross_gift_enabled")
-        if data.get("cross_gift_line") in _LEGACY_CROSS_GIFT_LINES:
+        current_line = data.get("cross_gift_line")
+        if current_line in _LEGACY_CROSS_GIFT_LINES:
             data["cross_gift_line"] = _DEFAULT_CROSS_GIFT_LINE
             migrated.append("cross_gift_line")
+        else:
+            # 自定义模板：新语义只认复数 {targets}，因此仍含单数 {target} 的值
+            # 必然是「每个受赠人一行」的旧语义或照此写的自定义模板——
+            # 保留其文案，剥掉行首装饰后转为行内后缀
+            line_text = str(current_line or "")
+            if line_text and "{targets}" not in line_text and "{target}" in line_text:
+                body = _LEADING_DECOR_RE.sub("", line_text).strip()
+                data["cross_gift_line"] = " → " + body.replace("{target}", "{targets}")
+                migrated.append("cross_gift_line(自定义模板)")
         if migrated:
             _log.info(
                 "[GiftThanks] 已迁移历史默认值: {}（未自定义过的项才迁移）",
