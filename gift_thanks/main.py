@@ -54,6 +54,12 @@ _log = get_logger(__name__)
 
 _LUCKY_STATS_FILE = "lucky_stats.json"
 
+# 历史默认值 —— 供 _migrate_config 判定「用户是否自定义过」。
+# schema 默认值改动不会覆盖已保存的账户配置，故把恰好等于旧默认值者视为
+# 从未自定义，在加载时迁移为新默认值；用户改过的值一律不动。
+_LEGACY_CROSS_GIFT_LINE = "┆　• 送给：{target}"
+_DEFAULT_CROSS_GIFT_LINE = "送给：{target}"
+
 
 def _fmt_percent(value: float) -> str:
     """格式化百分比，保留一位小数，去除无意义的尾零。"""
@@ -123,7 +129,36 @@ class GiftThanksPlugin(Plugin):
     # 生命周期
     # ------------------------------------------------------------------ #
 
+    def _migrate_config(self, config: MissConfig) -> MissConfig:
+        """把「仍是历史默认值」的存量配置迁移为当前默认值。
+
+        v1.3.3 的两处默认值变更：
+
+        - ``cross_gift_enabled``：旧默认 ``false`` → 新默认 ``true``
+          （跨房礼物感谢改为默认开启）
+        - ``cross_gift_line``：旧默认 ``"┆　• 送给：{target}"`` → 新默认
+          ``"送给：{target}"``（标注移到装饰框外，不再需要行首装饰符号）
+
+        只迁移与旧默认值**完全相等**的项——用户自定义过的值保持不变。
+        """
+        data = dict(config.raw)
+        migrated: list[str] = []
+        if data.get("cross_gift_enabled") is False:
+            data["cross_gift_enabled"] = True
+            migrated.append("cross_gift_enabled")
+        if data.get("cross_gift_line") == _LEGACY_CROSS_GIFT_LINE:
+            data["cross_gift_line"] = _DEFAULT_CROSS_GIFT_LINE
+            migrated.append("cross_gift_line")
+        if migrated:
+            _log.info(
+                "[GiftThanks] 已迁移历史默认值: {}（未自定义过的项才迁移）",
+                "、".join(migrated),
+            )
+        return MissConfig(data)
+
     async def initialize(self, config: MissConfig) -> None:
+        # 先迁移再保存：后续所有读取都走迁移后的配置
+        config = self._migrate_config(config)
         self._config = config
 
         cat_food = config.get_list("cat_food_names")
@@ -201,7 +236,7 @@ class GiftThanksPlugin(Plugin):
         （footer 之后）以 ``cross_gift_line`` 标注（留空则不输出该行）。
         """
         cfg = self._config
-        if cfg is None or not cfg.get_bool("cross_gift_enabled", False):
+        if cfg is None or not cfg.get_bool("cross_gift_enabled", True):
             return
 
         gift = event.gift

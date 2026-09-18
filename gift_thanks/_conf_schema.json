@@ -83,8 +83,8 @@
     "cross_gift_enabled": {
         "group": "常用",
         "type": "boolean",
-        "default": false,
-        "description": "是否感谢跨房礼物：开启后，大厅中观众送给其他麦（非本直播间）的礼物也会发送感谢消息"
+        "default": true,
+        "description": "是否感谢跨房礼物：开启后，大厅中观众送给其他麦（非本直播间）的礼物也会发送感谢消息（默认开启）"
     },
     "cross_gift_line": {
         "group": "文案",
