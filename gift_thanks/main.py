@@ -239,7 +239,7 @@ class GiftThanksPlugin(Plugin):
         （footer 之后）以 ``cross_gift_line`` 标注（留空则不输出该行）。
         """
         cfg = self._config
-        if cfg is None or not cfg.get_bool("cross_gift_enabled", True):
+        if cfg is None:
             return
 
         gift = event.gift
@@ -256,6 +256,14 @@ class GiftThanksPlugin(Plugin):
             # 受赠主播未知时（平台未携带 room 字段）留空，不输出标注行
             target=event.target_creator_name or None,
         )
+
+        # 关闭跨房感谢只影响「发不发消息」，不影响「礼物算不算数」——
+        # 幸运值仍要累计，否则榜单会漏掉跨房贡献
+        if not cfg.get_bool("cross_gift_enabled", True):
+            self._accumulate_lucky(
+                cfg, event.user.id, event.user.name, self._merge_items([item])
+            )
+            return
 
         if cfg.get_bool("batch_enabled", True):
             await self._enqueue(event, item)
@@ -449,28 +457,9 @@ class GiftThanksPlugin(Plugin):
                 value_line = value_line_fmt.replace("{gift_value}", str(total_value))
                 lines.append(value_line)
 
-        lucky_actual = sum(
-            m.price * m.num for m in merged if m.is_lucky and m.lucky_original_price > 0
-        )
-        lucky_original = sum(
-            m.lucky_original_price for m in merged if m.is_lucky and m.lucky_original_price > 0
-        )
-        if lucky_original > 0:
-            round_percent = lucky_actual / lucky_original * 100
-
-            # 更新该用户的累计幸运值
-            user_stats = self._get_user_stats(user_id, user_name)
-            user_stats["actual"] = int(user_stats["actual"]) + lucky_actual
-            user_stats["original"] = int(user_stats["original"]) + lucky_original
-            user_stats["name"] = user_name
-
-            total_percent = _percent(
-                int(user_stats["actual"]), int(user_stats["original"])
-            )
-
-            # 立即持久化，防止异常停止丢失数据
-            self._save_lucky_stats()
-
+        lucky = self._accumulate_lucky(cfg, user_id, user_name, merged)
+        if lucky is not None:
+            round_percent, total_percent = lucky
             round_fmt = cfg.get_str(
                 "lucky_round_format", "🍀 本轮幸运值：{lucky_percent}%"
             )
@@ -482,6 +471,43 @@ class GiftThanksPlugin(Plugin):
             lines.append(total_fmt.replace("{total_lucky_percent}", _fmt_percent(total_percent)))
 
         return "\n".join(lines)
+
+    def _accumulate_lucky(
+        self,
+        cfg: MissConfig,
+        user_id: int,
+        user_name: str,
+        merged: list[_GiftItem],
+    ) -> tuple[float, float] | None:
+        """累计并持久化幸运值，返回 ``(本轮%, 累计%)``。
+
+        从 ``_build_message`` 中抽出，使「统计」与「是否发送感谢消息」解耦——
+        跨房感谢关闭时礼物仍要计入榜单。
+
+        :param merged: 已合并的礼物条目
+        :return: 无幸运礼物时返回 ``None``
+        """
+        lucky_actual = sum(
+            m.price * m.num for m in merged if m.is_lucky and m.lucky_original_price > 0
+        )
+        lucky_original = sum(
+            m.lucky_original_price for m in merged if m.is_lucky and m.lucky_original_price > 0
+        )
+        if lucky_original <= 0:
+            return None
+
+        user_stats = self._get_user_stats(user_id, user_name)
+        user_stats["actual"] = int(user_stats["actual"]) + lucky_actual
+        user_stats["original"] = int(user_stats["original"]) + lucky_original
+        user_stats["name"] = user_name
+
+        # 立即持久化，防止异常停止丢失数据
+        self._save_lucky_stats()
+
+        return (
+            lucky_actual / lucky_original * 100,
+            _percent(int(user_stats["actual"]), int(user_stats["original"])),
+        )
 
     # ------------------------------------------------------------------ #
     # 榜单构建
