@@ -89,8 +89,8 @@
     "cross_gift_line": {
         "group": "文案",
         "type": "string",
-        "default": "┆　• 送给：{target}",
-        "description": "跨房礼物的受赠主播标注行（{target} 替换为受赠主播昵称；留空则不输出该行）"
+        "default": "送给：{target}",
+        "description": "跨房礼物的受赠主播标注行，输出在装饰框外 footer 之后（{target} 替换为受赠主播昵称；留空则不输出该行）"
     },
     "board_cmd_white": {
         "group": "常用",

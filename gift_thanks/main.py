@@ -197,8 +197,8 @@ class GiftThanksPlugin(Plugin):
     async def on_cross_gift(self, event: LiveCrossGiftEvent) -> None:
         """收到跨房礼物（大厅中送给其他麦）→ 按开关决定是否感谢。
 
-        礼物送给了别的主播，故条目带上受赠主播，在消息末尾以
-        ``cross_gift_line`` 标注（留空则不输出该行）。
+        礼物送给了别的主播，故条目带上受赠主播，在装饰框**外**
+        （footer 之后）以 ``cross_gift_line`` 标注（留空则不输出该行）。
         """
         cfg = self._config
         if cfg is None or not cfg.get_bool("cross_gift_enabled", False):
@@ -376,8 +376,14 @@ class GiftThanksPlugin(Plugin):
             if m.name not in cat_food_names:
                 has_non_cat_food = True
 
+        # 底部装饰画
+        footer = cfg.get_str("footer_art", "")
+        if footer:
+            lines.append(footer)
+
+        # frame 外：受赠主播 → 价值 → 本轮幸运值 → 累计幸运值
         # 跨房礼物：标注受赠主播（同一批次可能送给多个主播，按出现顺序逐个输出）
-        cross_line_fmt = cfg.get_str("cross_gift_line", "┆　• 送给：{target}")
+        cross_line_fmt = cfg.get_str("cross_gift_line", "送给：{target}")
         if cross_line_fmt:
             targets: list[str] = []
             for m in merged:
@@ -386,12 +392,6 @@ class GiftThanksPlugin(Plugin):
             for target in targets:
                 lines.append(cross_line_fmt.replace("{target}", target))
 
-        # 底部装饰画
-        footer = cfg.get_str("footer_art", "")
-        if footer:
-            lines.append(footer)
-
-        # frame 外：价值 → 本轮幸运值 → 累计幸运值
         if has_non_cat_food:
             total_value = sum(m.price * m.num for m in merged if m.name not in cat_food_names)
             if total_value > 0:  # 总价值为 0 时不输出价值行
