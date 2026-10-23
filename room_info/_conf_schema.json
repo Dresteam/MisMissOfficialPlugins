@@ -1,0 +1,64 @@
+{
+    "cmd": {
+        "group": "常用",
+        "type": "string",
+        "default": "直播间",
+        "description": "触发指令（精确匹配）"
+    },
+    "cmd_aliases": {
+        "group": "常用",
+        "type": "array",
+        "default": [
+            "直播数据"
+        ],
+        "description": "指令别名（精确匹配，可留空）"
+    },
+    "admin_only": {
+        "group": "权限",
+        "type": "boolean",
+        "default": true,
+        "description": "仅房管 / 主播可使用；关闭后所有人都能查"
+    },
+    "allowed_users": {
+        "group": "权限",
+        "type": "array",
+        "default": [],
+        "description": "额外允许的用户名或用户 ID（每行一个；仅 admin_only 开启时生效）"
+    },
+    "deny_reply": {
+        "group": "权限",
+        "type": "string",
+        "default": "",
+        "description": "无权限时的回复；留空则静默忽略"
+    },
+    "cooldown_seconds": {
+        "group": "高级",
+        "type": "int",
+        "default": 5,
+        "description": "同一直播间两次查询的最短间隔（秒），0 表示不限制"
+    },
+    "cache_seconds": {
+        "group": "高级",
+        "type": "int",
+        "default": 10,
+        "description": "数据缓存时长（秒），避免连续查询把平台接口打满"
+    },
+    "max_chars": {
+        "group": "高级",
+        "type": "int",
+        "default": 180,
+        "description": "单条消息最大字符数；超出时按行拆成多条发送"
+    },
+    "show_unknown": {
+        "group": "高级",
+        "type": "boolean",
+        "default": true,
+        "description": "平台未提供的数据是否仍显示「暂无」行"
+    },
+    "mention": {
+        "group": "高级",
+        "type": "boolean",
+        "default": true,
+        "description": "是否在首行 @ 指令触发人"
+    }
+}
