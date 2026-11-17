@@ -215,6 +215,7 @@ class RoomInfoPlugin(Plugin):
             ),
             "accumulation": cls._to_int(stats.get("accumulation")),
             "attention": cls._to_int(stats.get("attention_count")),
+            "online": cls._to_int(stats.get("online")),
             "score": cls._to_int(stats.get("score")),
             "superfan": cls._superfan_count(superfan_info),
             "vip": cls._vip_count(vip_info),
@@ -317,6 +318,7 @@ class RoomInfoPlugin(Plugin):
         add("🎤分区", snapshot.get("catalog"))
         add("⏰直播时长", snapshot.get("duration"))
         add("👪累计人数", snapshot.get("accumulation"))
+        add("👥在线人数", snapshot.get("online"))
         add("💗关注数", snapshot.get("attention"))
         add("☀️热度", snapshot.get("score"))
         add("👩超粉", snapshot.get("superfan"))

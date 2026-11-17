@@ -1,5 +1,33 @@
 {
+    "cmd": {
+        "group": "常用",
+        "type": "string",
+        "default": "歌单",
+        "description": "触发歌单的指令名（可改成任意文字，如「本场歌单」）"
+    },
+    "cmd_aliases": {
+        "group": "常用",
+        "type": "array",
+        "default": [
+            "歌曲列表",
+            "本场歌单"
+        ],
+        "description": "歌单指令的别名"
+    },
+    "page_size": {
+        "group": "常用",
+        "type": "int",
+        "default": 6,
+        "description": "每页最多歌曲数（实际还会受 max_chars 字数预算约束）"
+    },
+    "max_chars": {
+        "group": "常用",
+        "type": "int",
+        "default": 180,
+        "description": "单条消息字数上限；分页会按它计算每页放几首，只有单行超长时才再拆成多条。0 表示不限制"
+    },
     "song_list": {
+        "group": "内容",
         "type": "template_list",
         "default": [
             "晴天 - 周杰伦",
@@ -10,18 +38,34 @@
         "description": "歌单歌曲列表（每行一首，按顺序输出）"
     },
     "header": {
+        "group": "展示",
         "type": "string",
         "default": "★--☁✨☁ 本场歌单☁✨☁--★",
         "description": "歌单顶部装饰边框"
     },
+    "page_line": {
+        "group": "展示",
+        "type": "string",
+        "default": "❀ ✣({page}/{total}页)  发「{cmd} {next}」翻页",
+        "description": "页码行模板（{page}=当前页，{total}=总页数，{cmd}=指令名，{next}=下一页）"
+    },
     "item_prefix": {
+        "group": "展示",
         "type": "string",
         "default": "❥•{idx} ",
         "description": "每行前缀模板（{idx}=序号）"
     },
+    "empty_text": {
+        "group": "展示",
+        "type": "string",
+        "default": "歌单还是空的～",
+        "description": "歌单为空时显示的文字"
+    },
     "footer": {
+        "group": "展示",
         "type": "string",
         "default": "══════ ᶫᵒᵛᵉᵧₒᵤ ══════",
         "description": "歌单底部装饰边框"
     }
 }
+

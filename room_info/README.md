@@ -35,7 +35,7 @@
 |------|------|
 | 分区 | `GET /api/v2/meta/data`（`catalog_id` → 一级-二级分区名） |
 | 直播时长 | `GET /api/v2/live/{room_id}` 的 `status.open_time` |
-| 累计人数 / 关注数 / 热度 | 同上，`statistics.accumulation / attention_count / score` |
+| 累计人数 / 在线人数 / 关注数 / 热度 | 同上，`statistics.accumulation / online / attention_count / score` |
 | 贵宾 | `GET /api/v2/chatroom/vip/list?room_id=` 的 `vip_num` |
 | 超粉 | `GET /api/v2/chatroom/superfan/rank?room_id=` 的 `pagination.count` |
 | 小时榜 / 差值 | `GET /api/v2/chatroom/meta?room_id=` 的 `hour_rank.rank / rank_up` |
