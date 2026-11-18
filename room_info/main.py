@@ -101,9 +101,24 @@ class RoomInfoPlugin(Plugin):
             return
         self._last_reply[room_id] = now
 
-        snapshot = await self._snapshot(room_id, cfg)
+        snapshot = dict(await self._snapshot(room_id, cfg))
+        # REST 的 statistics.online 对非主播身份通常恒为 0（公开接口拿不到
+        # 房间实时在线数）。命令本身由直播间 WS 事件触发，此时 livestream
+        # 上的 online_count 来自 room:statistics，是真正的实时在线人数。
+        online = self._live_online_count(event.livestream)
+        if online is not None and online > 0:
+            snapshot["online"] = online
         message = self._format(snapshot, event.user.name, cfg)
         await self._send_text(event.livestream, message, cfg)
+
+    @staticmethod
+    def _live_online_count(livestream: Any) -> int | None:
+        """取直播间 WS 已推送的在线人数；拿不到返回 None。"""
+        try:
+            value = int(getattr(livestream, "online_count", 0) or 0)
+        except (TypeError, ValueError, AttributeError):
+            return None
+        return value
 
     # ------------------------------------------------------------------ #
     # 权限与配置

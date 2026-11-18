@@ -1,7 +1,7 @@
 name: room_info
 desc: 直播间信息插件——发送「直播间」查看分区、在线人数、热度、时长、榜单等实时数据
 author: MisMiss
-version: 1.1.0
+version: 1.1.1
 short_desc: 直播间信息（房管指令，输出实时数据卡片）
 display_name: 直播间信息
 repo: https://github.com/Dresteam/MisMiss

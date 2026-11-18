@@ -35,7 +35,7 @@
 |------|------|
 | 分区 | `GET /api/v2/meta/data`（`catalog_id` → 一级-二级分区名） |
 | 直播时长 | `GET /api/v2/live/{room_id}` 的 `status.open_time` |
-| 累计人数 / 在线人数 / 关注数 / 热度 | 同上，`statistics.accumulation / online / attention_count / score` |
+| 累计人数 / 在线人数 / 关注数 / 热度 | 同上，`statistics.accumulation / online / attention_count / score`；在线人数优先取直播间 WS 的 `room:statistics` |
 | 贵宾 | `GET /api/v2/chatroom/vip/list?room_id=` 的 `vip_num` |
 | 超粉 | `GET /api/v2/chatroom/superfan/rank?room_id=` 的 `pagination.count` |
 | 小时榜 / 差值 | `GET /api/v2/chatroom/meta?room_id=` 的 `hour_rank.rank / rank_up` |
@@ -43,6 +43,11 @@
 
 猫耳公开接口**没有提供**分区排名、热度排名、Banner 位、推荐位、福星榜、
 PK 胜率，这些项**直接不输出**，卡片只保留能拿到真实数据的字段。
+
+> 在线人数：REST 的 `statistics.online` 对**非主播身份**通常恒为 0（公开接口
+> 拿不到房间实时在线数）。插件优先读取直播间 WS `room:statistics` 推送的
+> `livestream.online_count`，也就是面板前端显示的那个在线人数；只有 WS
+> 尚未推送时才退回 REST 值。
 
 `show_unknown` 只影响「接口临时失败 / 该房间确实没有这项数据」时是否显示
 「暂无」行（例如未上榜时的小时榜），不会让不支持的项重新出现。
